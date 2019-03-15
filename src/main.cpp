@@ -2,7 +2,6 @@
 #include "mediasoupclient.hpp"
 #include <cpr/cpr.h>
 #include <cstdlib>
-
 #include <iostream>
 
 using json = nlohmann::json;
