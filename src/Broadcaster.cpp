@@ -62,7 +62,7 @@ void Broadcaster::OnConnectionStateChange(
 	std::cout << "OnConnectionStateChange: connectionState: " << connectionState << std::endl;
 }
 
-/* Producer::PublicListener::OnProduce
+/* Producer::Listener::OnProduce
  *
  * Fired when a producer needs to be created in mediasoup.
  * Retrieve the remote producer ID and feed the caller with it.

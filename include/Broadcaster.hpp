@@ -7,7 +7,7 @@
 #include <string>
 
 class Broadcaster : public mediasoupclient::SendTransport::Listener,
-                    mediasoupclient::Producer::PublicListener
+                    mediasoupclient::Producer::Listener
 {
 	/* Virtual methods inherited from SendTransport::Listener. */
 public:
@@ -17,7 +17,7 @@ public:
 	std::future<std::string> OnProduce(
 	  const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData);
 
-	/* Virtual methods inherited from Producer::PublicListener. */
+	/* Virtual methods inherited from Producer::Listener. */
 public:
 	void OnTransportClose(mediasoupclient::Producer* producer);
 
