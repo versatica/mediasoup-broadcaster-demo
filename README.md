@@ -8,7 +8,7 @@ Once installed (see *Installation* below):
 SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcaster
 ```
 
-## Dependencies
+## Dependencies (already included in the repository)
 
 ### [libmediasoupclient](https://github.com/jmillan/libmediasoupclient)
 ### [cpr](https://github.com/whoshuu/cpr)
@@ -17,7 +17,6 @@ SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcas
 
 ```bash
 git clone https://github.com/jmillan/broadcaster.git
-git submodule update --init --recursive
 
 cmake . -Bbuild                                            \
 -DLIBWEBRTC_INCLUDE_PATH:PATH=/Your/libwebrtc/include/path \
