@@ -77,17 +77,6 @@ std::future<std::string> Broadcaster::OnProduce(
 
 	uint32_t producerId = rtc::CreateRandomId();
 
-	if (kind == "video" && rtpParameters["encodings"].size() > 1)
-	{
-		auto& encodings = rtpParameters["encodings"];
-
-		encodings[0]["profile"] = "low";
-		encodings[1]["profile"] = "medium";
-
-		if (encodings.size() > 2)
-			encodings[2]["profile"] = "high";
-	}
-
 	/* clang-format off */
 	json body =
 	{
