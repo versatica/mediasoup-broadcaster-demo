@@ -1,0 +1,4 @@
+[submodule "deps/cpr"]
+	path = deps/cpr
+	url = https://github.com/whoshuu/cpr.git
+	ignore = dirty
