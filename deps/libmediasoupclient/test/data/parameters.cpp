@@ -12,7 +12,6 @@ json generateRouterRtpCapabilities()
 	codecs = R"(
 	[
 		{
-			"name"                 : "opus",
 			"mimeType"             : "audio/opus",
 			"kind"                 : "audio",
 			"clockRate"            : 48000,
@@ -25,7 +24,6 @@ json generateRouterRtpCapabilities()
 			}
 		},
 		{
-			"name"                 : "VP8",
 			"mimeType"             : "video/VP8",
 			"kind"                 : "video",
 			"clockRate"            : 90000,
@@ -46,7 +44,6 @@ json generateRouterRtpCapabilities()
 			}
 		},
 		{
-			"name"                 : "rtx",
 			"mimeType"             : "video/rtx",
 			"kind"                 : "video",
 			"clockRate"            : 90000,
@@ -58,7 +55,6 @@ json generateRouterRtpCapabilities()
 			}
 		},
 		{
-			"name"                 : "H264",
 			"mimeType"             : "video/H264",
 			"kind"                 : "video",
 			"clockRate"            : 90000,
@@ -81,7 +77,6 @@ json generateRouterRtpCapabilities()
 			}
 		},
 		{
-			"name"                 : "rtx",
 			"mimeType"             : "video/rtx",
 			"kind"                 : "video",
 			"clockRate"            : 90000,
@@ -179,7 +174,7 @@ json generateRtpParametersByKind()
 	/* clang-format on */
 
 	auto codecs = generateRouterRtpCapabilities()["codecs"];
-	for (auto codec : codecs)
+	for (auto& codec : codecs)
 	{
 		codec["payloadType"] = codec["preferredPayloadType"];
 		codec.erase("preferredPayloadType");
@@ -193,7 +188,7 @@ json generateRtpParametersByKind()
 	}
 
 	auto headerExtensions = generateRouterRtpCapabilities()["headerExtensions"];
-	for (auto ext : headerExtensions)
+	for (auto& ext : headerExtensions)
 	{
 		ext["id"] = ext["preferredId"];
 		ext.erase("preferredId");
@@ -296,7 +291,6 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"codecs" :
 				[
 					{
-						"name"         : "opus",
 						"mimeType"     : "audio/opus",
 						"clockRate"    : 48000,
 						"payloadType"  : 100,
@@ -342,7 +336,6 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"codecs" :
 				[
 					{
-						"name"         : "ISAC",
 						"mimeType"     : "audio/ISAC",
 						"clockRate"    : 16000,
 						"payloadType"  : 111,
@@ -385,7 +378,6 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"codecs" :
 				[
 					{
-						"name"         : "VP8",
 						"mimeType"     : "video/VP8",
 						"clockRate"    : 90000,
 						"payloadType"  : 101,
@@ -405,7 +397,6 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 						}
 					},
 					{
-						"name"         : "rtx",
 						"mimeType"     : "video/rtx",
 						"clockRate"    : 90000,
 						"payloadType"  : 102,

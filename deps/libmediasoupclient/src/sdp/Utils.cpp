@@ -64,7 +64,6 @@ namespace Sdp
 					/* clang-format off */
 					json codec =
 					{
-						{ "name",                 rtp["codec"]   },
 						{ "mimeType",             mimeType       },
 						{ "kind",                 kind           },
 						{ "clockRate",            rtp["rate"]    },
@@ -76,9 +75,9 @@ namespace Sdp
 
 					if (kind == "audio")
 					{
-						auto it = rtp.find("encoding");
-						if (it != rtp.end())
-							codec["channels"] = std::stoi(it->get<std::string>());
+						auto jsonEncodingIt = rtp.find("encoding");
+						if (jsonEncodingIt != rtp.end() && jsonEncodingIt->is_string())
+							codec["channels"] = std::stoi(jsonEncodingIt->get<std::string>());
 						else
 							codec["channels"] = 1;
 					}
@@ -91,11 +90,11 @@ namespace Sdp
 				{
 					auto parameters = sdptransform::parseParams(fmtp["config"]);
 
-					auto it = codecsMap.find(fmtp["payload"]);
-					if (it == codecsMap.end())
+					auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
+					if (jsonPayloadIt == codecsMap.end())
 						continue;
 
-					auto& codec = it->second;
+					auto& codec = jsonPayloadIt->second;
 
 					codec["parameters"] = parameters;
 				}
@@ -103,11 +102,11 @@ namespace Sdp
 				// Get RTCP feedback for each codec.
 				for (auto& fb : m["rtcpFb"])
 				{
-					auto itCodec = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
-					if (itCodec == codecsMap.end())
+					auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
+					if (jsonCodecIt == codecsMap.end())
 						continue;
 
-					auto& codec = itCodec->second;
+					auto& codec = jsonCodecIt->second;
 
 					/* clang-format off */
 					json feedback =
@@ -116,9 +115,9 @@ namespace Sdp
 					};
 					/* clang-format on */
 
-					auto it = fb.find("subtype");
-					if (it != fb.end())
-						feedback["parameter"] = *it;
+					auto jsonSubtypeIt = fb.find("subtype");
+					if (jsonSubtypeIt != fb.end())
+						feedback["parameter"] = *jsonSubtypeIt;
 
 					codec["rtcpFeedback"].push_back(feedback);
 				}
@@ -215,14 +214,18 @@ namespace Sdp
 			// Get the SSRC.
 			auto mSsrcs = offerMediaObject["ssrcs"];
 
-			auto it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
-				return line["attribute"].get<std::string>() == "msid";
+			auto jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
+				auto jsonAttributeIt = line.find("attribute");
+				if (jsonAttributeIt == line.end() && !jsonAttributeIt->is_string())
+					return false;
+
+				return jsonAttributeIt->get<std::string>() == "msid";
 			});
 
-			if (it == mSsrcs.end())
+			if (jsonSsrcIt == mSsrcs.end())
 				throw Exception("a=ssrc line with msid information not found");
 
-			auto ssrcMsidLine = *it;
+			auto ssrcMsidLine = *jsonSsrcIt;
 
 			auto v        = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
 			auto streamId = v[0];
@@ -233,17 +236,22 @@ namespace Sdp
 
 			// Get the SSRC for RTX.
 
-			it = offerMediaObject.find("ssrcGroups");
-			if (it != offerMediaObject.end())
+			auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
+			if (jsonSsrcGroupsIt != offerMediaObject.end())
 			{
-				auto ssrcGroups = *it;
+				auto ssrcGroups = *jsonSsrcGroupsIt;
 
 				std::find_if(
 				  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
-					  if (line["semantics"].get<std::string>() != "FID")
+					  auto jsonSemanticsIt = line.find("semantics");
+					  if (jsonSemanticsIt == line.end() || !jsonSemanticsIt->is_string())
 						  return false;
 
-					  auto v = mediasoupclient::Utils::split(line["ssrcs"].get<std::string>(), ' ');
+					  auto jsonSsrcsIt = line.find("ssrcs");
+					  if (jsonSsrcsIt == line.end() || !jsonSsrcsIt->is_string())
+						  return false;
+
+					  auto v = mediasoupclient::Utils::split(jsonSsrcsIt->get<std::string>(), ' ');
 					  if (std::stoull(v[0]) == firstSsrc)
 					  {
 						  firstRtxSsrc = std::stoull(v[1]);
@@ -255,15 +263,23 @@ namespace Sdp
 				  });
 			}
 
-			it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [&firstSsrc](const json& line) {
+			jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [&firstSsrc](const json& line) {
+				auto jsonAttributeIt = line.find("attribute");
+				if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
+					return false;
+
+				auto jsonIdIt = line.find("id");
+				if (jsonIdIt == line.end() || !jsonIdIt->is_number())
+					return false;
+
 				return (
-				  line["attribute"].get<std::string>() == "cname" && line["id"].get<uint32_t>() == firstSsrc);
+				  jsonAttributeIt->get<std::string>() == "cname" && jsonIdIt->get<uint32_t>() == firstSsrc);
 			});
 
-			if (it == mSsrcs.end())
+			if (jsonSsrcIt == mSsrcs.end())
 				throw Exception("CNAME line not found");
 
-			auto cname = (*it)["value"].get<std::string>();
+			auto cname = (*jsonSsrcIt)["value"].get<std::string>();
 
 			auto ssrcs    = json::array();
 			auto rtxSsrcs = json::array();
@@ -349,13 +365,16 @@ namespace Sdp
 
 			const json& mSsrcs = offerMediaObject["ssrcs"];
 
-			auto it = find_if(
-			  mSsrcs.begin(), mSsrcs.end(), [](const json& line) { return line["attribute"] == "cname"; });
+			auto jsonSsrcIt = find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
+				auto jsonAttributeIt = line.find("attribute");
 
-			if (it == mSsrcs.end())
-				throw new std::runtime_error("a=ssrc line with cname information not found");
+				return (jsonAttributeIt != line.end() && jsonAttributeIt->is_string());
+			});
 
-			auto ssrcCnameLine = *it;
+			if (jsonSsrcIt == mSsrcs.end())
+				return "";
+
+			auto ssrcCnameLine = *jsonSsrcIt;
 
 			return ssrcCnameLine["value"].get<std::string>();
 		}
@@ -377,10 +396,10 @@ namespace Sdp
 
 			std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
 
-			auto it = offerMediaObject.find("ssrcGroups");
-			if (it != offerMediaObject.end())
+			auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
+			if (jsonSsrcGroupsIt != offerMediaObject.end())
 			{
-				auto ssrcGroups = (*it);
+				auto ssrcGroups = (*jsonSsrcGroupsIt);
 
 				// First assume RTX is used.
 				for (auto& line : ssrcGroups)
@@ -445,45 +464,42 @@ namespace Sdp
 				if (mimeType != "audio/opus")
 					continue;
 
-				auto rtps = answerMediaObject["rtp"];
-				auto it   = find_if(rtps.begin(), rtps.end(), [&codec](const json& r) {
-          return r["payload"] == codec["payloadType"];
-        });
+				auto rtps      = answerMediaObject["rtp"];
+				auto jsonRtpIt = find_if(rtps.begin(), rtps.end(), [&codec](const json& r) {
+					return r["payload"] == codec["payloadType"];
+				});
 
-				if (it == rtps.end())
+				if (jsonRtpIt == rtps.end())
 					continue;
 
 				// Just in case.
 				if (answerMediaObject.find("fmtp") == answerMediaObject.end())
 					answerMediaObject["fmtp"] = json::array();
 
-				auto fmtps = answerMediaObject["fmtp"];
-				it         = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
-          return f["payload"] == codec["payloadType"];
-        });
+				auto fmtps      = answerMediaObject["fmtp"];
+				auto jsonFmtpIt = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
+					return f["payload"] == codec["payloadType"];
+				});
 
-				json parameters;
-
-				if (it == fmtps.end())
+				if (jsonFmtpIt == fmtps.end())
 				{
 					json fmtp = { { "payload", codec["payloadType"] }, { "config", "" } };
 
 					answerMediaObject["fmtp"].push_back(fmtp);
-					parameters = sdptransform::parseParams(fmtp["config"]);
+					jsonFmtpIt = answerMediaObject["fmtp"].end() - 1;
 				}
-				else
-				{
-					auto parameters = sdptransform::parseParams((*it)["config"]);
-				}
+
+				json& fmtp      = *jsonFmtpIt;
+				json parameters = sdptransform::parseParams(fmtp["config"]);
 
 				if (mimeType == "audio/opus")
 				{
-					auto it2 = codec["parameters"].find("sprop-stereo");
+					auto jsonSpropStereoIt = codec["parameters"].find("sprop-stereo");
 
-					if (it2 != codec["parameters"].end())
+					if (jsonSpropStereoIt != codec["parameters"].end() && jsonSpropStereoIt->is_boolean())
 					{
-						auto spropStereo     = (*it2).get<uint8_t>();
-						parameters["stereo"] = spropStereo != 0u ? 1 : 0;
+						auto spropStereo     = jsonSpropStereoIt->get<bool>();
+						parameters["stereo"] = spropStereo == true ? 1 : 0;
 					}
 				}
 
@@ -504,7 +520,7 @@ namespace Sdp
 						config << item.value().get<int>();
 				}
 
-				answerMediaObject["fmtp"][0]["config"] = config.str();
+				fmtp["config"] = config.str();
 			}
 		}
 	} // namespace Utils

@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 	mediasoupclient::Logger::SetDefaultHandler();
 
 	// Initilize mediasoupclient.
-	mediasoupclient::PeerConnection::ClassInit();
+	mediasoupclient::Initialize();
 
 	std::cout << ">>> welcome to mediasoup broadcaster app!\n" << std::endl;
 

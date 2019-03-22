@@ -4,9 +4,30 @@
 #include "ortc.hpp"
 #include "Logger.hpp"
 #include <algorithm> // std::find_if
+#include <regex>
 #include <string>
 
 using json = nlohmann::json;
+
+static bool isRtxCodec(const json& codec)
+{
+	static const std::regex regex(".+/rtx$");
+
+	std::smatch match;
+	auto name = codec["mimeType"].get<std::string>();
+
+	return std::regex_match(name, match, regex);
+}
+
+static bool isAudioCodec(const json& codec)
+{
+	static const std::regex regex("audio/.+$");
+
+	std::smatch match;
+	auto name = codec["mimeType"].get<std::string>();
+
+	return std::regex_match(name, match, regex);
+}
 
 namespace mediasoupclient
 {
@@ -16,19 +37,19 @@ namespace ortc
 	{
 		MSC_TRACE();
 
-		auto it = codec.find("parameters");
-		if (it == codec.end())
+		auto jsonParameterIt = codec.find("parameters");
+		if (jsonParameterIt == codec.end())
 			return 0;
 
-		auto parameters = *it;
-		it              = parameters.find("packetization-mode");
-		if (it == parameters.end() || !it->is_number())
+		auto parameters              = *jsonParameterIt;
+		auto jsonPacketizationModeIt = parameters.find("packetization-mode");
+		if (jsonPacketizationModeIt == parameters.end() || !jsonPacketizationModeIt->is_number_unsigned())
 			return 0;
 
-		return it->get<uint8_t>();
+		return jsonPacketizationModeIt->get<uint8_t>();
 	}
 
-	static bool matchCapCodecs(const json& aCodec, const json& bCodec)
+	static bool matchCodecs(const json& aCodec, const json& bCodec)
 	{
 		MSC_TRACE();
 
@@ -44,16 +65,16 @@ namespace ortc
 		if (aCodec["clockRate"] != bCodec["clockRate"])
 			return false;
 
-		auto itA = aCodec.find("channels");
-		auto itB = bCodec.find("channels");
+		auto jsonChannelsAIt = aCodec.find("channels");
+		auto jsonChannelsBIt = bCodec.find("channels");
 
-		if (itA == aCodec.end() && itB != bCodec.end())
+		if (jsonChannelsAIt == aCodec.end() && jsonChannelsBIt != bCodec.end())
 			return false;
 
-		if (itA != aCodec.end() && itB == bCodec.end())
+		if (jsonChannelsAIt != aCodec.end() && jsonChannelsBIt == bCodec.end())
 			return false;
 
-		if (itA != aCodec.end() && aCodec["channels"] != bCodec["channels"])
+		if (jsonChannelsAIt != aCodec.end() && aCodec["channels"] != bCodec["channels"])
 			return false;
 
 		// Match H264 parameters.
@@ -85,32 +106,33 @@ namespace ortc
 
 		auto reducedRtcpFeedback = json::array();
 
-		auto aFbs = codecA["rtcpFeedback"];
-		auto bFbs = codecB["rtcpFeedback"];
+		auto jsonRtcpFeedbackAIt = codecA["rtcpFeedback"];
+		auto jsonRtcpFeedbackBIt = codecB["rtcpFeedback"];
 
-		for (auto& aFb : aFbs)
+		for (auto& aFb : jsonRtcpFeedbackAIt)
 		{
-			auto it = std::find_if(bFbs.begin(), bFbs.end(), [&aFb](const json& bFb) {
-				if (aFb["type"] != bFb["type"])
-					return false;
+			auto jsonRtcpFeedbackIt =
+			  std::find_if(jsonRtcpFeedbackBIt.begin(), jsonRtcpFeedbackBIt.end(), [&aFb](const json& bFb) {
+				  if (aFb["type"] != bFb["type"])
+					  return false;
 
-				auto itA = aFb.find("parameter");
-				auto itB = bFb.find("parameter");
+				  auto jsonParameterAIt = aFb.find("parameter");
+				  auto jsonParameterBIt = bFb.find("parameter");
 
-				if (itA == aFb.end() && itB != bFb.end())
-					return false;
+				  if (jsonParameterAIt == aFb.end() && jsonParameterBIt != bFb.end())
+					  return false;
 
-				if (itA != aFb.end() && itB == bFb.end())
-					return false;
+				  if (jsonParameterAIt != aFb.end() && jsonParameterBIt == bFb.end())
+					  return false;
 
-				if (itA == aFb.end())
-					return true;
+				  if (jsonParameterAIt == aFb.end())
+					  return true;
 
-				return (*itA) == (*itB);
-			});
+				  return (*jsonParameterAIt) == (*jsonParameterBIt);
+			  });
 
-			if (it != bFbs.end())
-				reducedRtcpFeedback.push_back(*it);
+			if (jsonRtcpFeedbackIt != jsonRtcpFeedbackBIt.end())
+				reducedRtcpFeedback.push_back(*jsonRtcpFeedbackIt);
 		}
 
 		return reducedRtcpFeedback;
@@ -135,25 +157,23 @@ namespace ortc
 		// Match media codecs and keep the order preferred by remoteCaps.
 		for (auto& remoteCodec : remoteCaps["codecs"])
 		{
-			// TODO: Ignore pseudo-codecs and feature codecs.
-			if ("rtx" == remoteCodec["name"].get<std::string>())
+			if (isRtxCodec(remoteCodec))
 				continue;
 
 			auto localCodecs = localCaps["codecs"];
 
-			auto it =
+			auto jsonLocalCodecIt =
 			  std::find_if(localCodecs.begin(), localCodecs.end(), [&remoteCodec](const json& localCodec) {
-				  return matchCapCodecs(localCodec, remoteCodec);
+				  return matchCodecs(localCodec, remoteCodec);
 			  });
 
-			if (it != localCodecs.end())
+			if (jsonLocalCodecIt != localCodecs.end())
 			{
-				auto localCodec = *it;
+				auto localCodec = *jsonLocalCodecIt;
 
 				/* clang-format off */
 				json extendedCodec =
 				{
-					{ "name",                 localCodec["name"]                          },
 					{ "mimeType",             localCodec["mimeType"]                      },
 					{ "kind",                 localCodec["kind"]                          },
 					{ "clockRate",            localCodec["clockRate"]                     },
@@ -167,10 +187,10 @@ namespace ortc
 				};
 				/* clang-format on */
 
-				auto it = localCodec.find("channels");
-				if (it != localCodec.end())
+				auto jsonChannelsIt = localCodec.find("channels");
+				if (jsonChannelsIt != localCodec.end() && jsonChannelsIt->is_number())
 				{
-					auto channels = (*it).get<uint8_t>();
+					auto channels = jsonChannelsIt->get<uint8_t>();
 					if (channels > 0)
 						extendedCodec["channels"] = channels;
 				}
@@ -183,29 +203,29 @@ namespace ortc
 		json& extendedCodecs = extendedRtpCapabilities["codecs"];
 		for (json& extendedCodec : extendedCodecs)
 		{
-			auto localCodecs = localCaps["codecs"];
-			auto it          = std::find_if(
-        localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
-          return "rtx" == localCodec["name"].get<std::string>() &&
-                 localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
-        });
+			auto localCodecs      = localCaps["codecs"];
+			auto jsonLocalCodecIt = std::find_if(
+			  localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
+				  return isRtxCodec(localCodec) &&
+				         localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
+			  });
 
-			if (it == localCodecs.end())
+			if (jsonLocalCodecIt == localCodecs.end())
 				continue;
 
-			auto matchingLocalRtxCodec = *it;
+			auto matchingLocalRtxCodec = *jsonLocalCodecIt;
 
-			auto remoteCodecs = remoteCaps["codecs"];
-			it                = std::find_if(
-        remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
-          return "rtx" == remoteCodec["name"].get<std::string>() &&
-                 remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
-        });
+			auto remoteCodecs      = remoteCaps["codecs"];
+			auto jsonRemoteCodecIt = std::find_if(
+			  remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
+				  return isRtxCodec(remoteCodec) &&
+				         remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
+			  });
 
-			if (it == remoteCodecs.end())
+			if (jsonRemoteCodecIt == remoteCodecs.end())
 				continue;
 
-			auto matchingRemoteRtxCodec = *it;
+			auto matchingRemoteRtxCodec = *jsonRemoteCodecIt;
 
 			extendedCodec["localRtxPayloadType"]  = matchingLocalRtxCodec["preferredPayloadType"];
 			extendedCodec["remoteRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
@@ -217,14 +237,15 @@ namespace ortc
 		{
 			auto localExts = localCaps["headerExtensions"];
 
-			auto it = std::find_if(localExts.begin(), localExts.end(), [&remoteExt](const json& localExt) {
-				return matchHeaderExtensions(localExt, remoteExt);
-			});
+			auto jsonLocalExtIt =
+			  std::find_if(localExts.begin(), localExts.end(), [&remoteExt](const json& localExt) {
+				  return matchHeaderExtensions(localExt, remoteExt);
+			  });
 
-			if (it == localExts.end())
+			if (jsonLocalExtIt == localExts.end())
 				continue;
 
-			auto matchingLocalExt = *it;
+			auto matchingLocalExt = *jsonLocalExtIt;
 
 			/* clang-format off */
 			json extendedExt =
@@ -264,7 +285,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]              },
 				{ "mimeType",             extendedCodec["mimeType"]          },
 				{ "kind",                 extendedCodec["kind"]              },
 				{ "clockRate",            extendedCodec["clockRate"]         },
@@ -274,10 +294,10 @@ namespace ortc
 			};
 			/* clang-format on */
 
-			auto it = extendedCodec.find("channels");
-			if (it != extendedCodec.end())
+			auto jsonChannelsIt = extendedCodec.find("channels");
+			if (jsonChannelsIt != extendedCodec.end() && jsonChannelsIt->is_number())
 			{
-				auto channels     = *it;
+				auto channels     = *jsonChannelsIt;
 				codec["channels"] = channels;
 			}
 
@@ -292,7 +312,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",                 "rtx"                                 },
 					{ "mimeType",             mimeType                              },
 					{ "kind",                 extendedCodec["kind"]                 },
 					{ "clockRate",            extendedCodec["clockRate"]            },
@@ -360,7 +379,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]             },
 				{ "mimeType",             extendedCodec["mimeType"]         },
 				{ "kind",                 extendedCodec["kind"]             },
 				{ "clockRate",            extendedCodec["clockRate"]        },
@@ -370,10 +388,10 @@ namespace ortc
 			};
 			/* clang-format on */
 
-			auto it = extendedCodec.find("channels");
-			if (it != extendedCodec.end())
+			auto jsonChannelsIt = extendedCodec.find("channels");
+			if (jsonChannelsIt != extendedCodec.end() && jsonChannelsIt->is_number())
 			{
-				auto channels     = *it;
+				auto channels     = *jsonChannelsIt;
 				codec["channels"] = channels;
 			}
 
@@ -388,7 +406,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",         "rtx"                               },
 					{ "mimeType",     mimeType                            },
 					{ "clockRate",    extendedCodec["clockRate"]          },
 					{ "payloadType",  extendedCodec["localRtxPayloadType"] },
@@ -455,7 +472,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]            },
 				{ "mimeType",             extendedCodec["mimeType"]         },
 				{ "kind",                 extendedCodec["kind"]             },
 				{ "clockRate",            extendedCodec["clockRate"]        },
@@ -465,10 +481,10 @@ namespace ortc
 			};
 			/* clang-format on */
 
-			auto it = extendedCodec.find("channels");
-			if (it != extendedCodec.end())
+			auto jsonChannelsIt = extendedCodec.find("channels");
+			if (jsonChannelsIt != extendedCodec.end() && jsonChannelsIt->is_number())
 			{
-				auto channels     = *it;
+				auto channels     = *jsonChannelsIt;
 				codec["channels"] = channels;
 			}
 
@@ -483,7 +499,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",         "rtx"                               },
 					{ "mimeType",     mimeType                            },
 					{ "clockRate",    extendedCodec["clockRate"]          },
 					{ "payloadType",  extendedCodec["localRtxPayloadType"] },
@@ -533,11 +548,11 @@ namespace ortc
 
 		auto codecs = extendedRtpCapabilities["codecs"];
 
-		auto it = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
+		auto jsonCodecIt = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
 			return kind == codec["kind"].get<std::string>();
 		});
 
-		return it != codecs.end();
+		return jsonCodecIt != codecs.end();
 	}
 
 	/**
@@ -554,11 +569,12 @@ namespace ortc
 		auto firstMediaCodec = rtpParameters["codecs"][0];
 
 		auto codecs = extendedRtpCapabilities["codecs"];
-		auto it     = std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
-      return codec["remotePayloadType"] == firstMediaCodec["payloadType"];
-    });
+		auto jsonCodecIt =
+		  std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
+			  return codec["remotePayloadType"] == firstMediaCodec["payloadType"];
+		  });
 
-		return it != codecs.end();
+		return jsonCodecIt != codecs.end();
 	}
 } // namespace ortc
 } // namespace mediasoupclient

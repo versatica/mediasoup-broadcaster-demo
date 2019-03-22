@@ -59,26 +59,10 @@ std::map<webrtc::PeerConnectionInterface::SignalingState, const std::string>
 };
 /* clang-format on */
 
-void PeerConnection::ClassInit()
-{
-	MSC_TRACE();
-
-	// rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
-
-	rtc::InitializeSSL();
-	rtc::InitRandom(rtc::Time());
-}
-
-void PeerConnection::ClassCleanup()
-{
-	MSC_TRACE();
-
-	rtc::CleanupSSL();
-}
-
 /* Instance methods. */
 
-PeerConnection::PeerConnection(PeerConnection::PrivateListener* privateListener, PeerConnection::Options* options)
+PeerConnection::PeerConnection(
+  PeerConnection::PrivateListener* privateListener, PeerConnection::Options* options)
 {
 	MSC_TRACE();
 
@@ -376,7 +360,8 @@ json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> s
 /* PeerConnection::PrivateListener. */
 
 // Triggered when the SignalingState changed.
-void PeerConnection::PrivateListener::OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState newState)
+void PeerConnection::PrivateListener::OnSignalingChange(
+  webrtc::PeerConnectionInterface::SignalingState newState)
 {
 	MSC_TRACE();
 
@@ -384,13 +369,15 @@ void PeerConnection::PrivateListener::OnSignalingChange(webrtc::PeerConnectionIn
 }
 
 // Triggered when media is received on a new stream from remote peer.
-void PeerConnection::PrivateListener::OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+void PeerConnection::PrivateListener::OnAddStream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 {
 	MSC_TRACE();
 }
 
 // Triggered when a remote peer closes a stream.
-void PeerConnection::PrivateListener::OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+void PeerConnection::PrivateListener::OnRemoveStream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 {
 	MSC_TRACE();
 }
@@ -449,7 +436,8 @@ void PeerConnection::PrivateListener::OnIceCandidate(const webrtc::IceCandidateI
 }
 
 // Triggered when the ICE candidates have been removed.
-void PeerConnection::PrivateListener::OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& /*candidates*/)
+void PeerConnection::PrivateListener::OnIceCandidatesRemoved(
+  const std::vector<cricket::Candidate>& /*candidates*/)
 {
 	MSC_TRACE();
 }
@@ -480,7 +468,8 @@ void PeerConnection::PrivateListener::OnAddTrack(
 // This behavior is specified in section 2.2.8.2.5 of the "Set the
 // RTCSessionDescription" algorithm:
 // https://w3c.github.io/webrtc-pc/#set-description
-void PeerConnection::PrivateListener::OnTrack(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
+void PeerConnection::PrivateListener::OnTrack(
+  rtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
 {
 	MSC_TRACE();
 }
@@ -492,7 +481,8 @@ void PeerConnection::PrivateListener::OnTrack(rtc::scoped_refptr<webrtc::RtpTran
 // With Unified Plan semantics, the receiver will remain but the transceiver
 // will have changed direction to either sendonly or inactive.
 // https://w3c.github.io/webrtc-pc/#process-remote-track-removal
-void PeerConnection::PrivateListener::OnRemoveTrack(rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
+void PeerConnection::PrivateListener::OnRemoveTrack(
+  rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
 {
 	MSC_TRACE();
 }

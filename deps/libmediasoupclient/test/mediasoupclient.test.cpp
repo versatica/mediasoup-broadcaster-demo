@@ -33,17 +33,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
 
-	// SECTION("mediasoup-client exposes a version property")
-	// {
-	// expect(version).toBeType("string");
-	// expect(version).toBe(pkg.version);
-	// }
-
 	SECTION("create a Device succeeds")
 	{
 		REQUIRE_NOTHROW(device.reset(new Device()));
-
-		REQUIRE_NOTHROW(device->GetHandlerName());
 		REQUIRE(!device->IsLoaded());
 	}
 
@@ -173,8 +165,12 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Pause the audio track before creating its Producer.
 		audioTrack->set_enabled(false);
 
-		REQUIRE_NOTHROW(
-		  audioProducer.reset(sendTransport->Produce(&producerListener, audioTrack, appData)));
+		std::vector<webrtc::RtpEncodingParameters> audioEncodings;
+
+		json codecOptions = { { "opusStereo", true }, { "opusDtx", true } };
+
+		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
+		  &producerListener, audioTrack, audioEncodings, codecOptions, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -313,7 +309,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			"channels":    2,
 			"clockRate":   48000,
 			"mimeType":    "audio/opus",
-			"name":        "opus",
 			"parameters":
 			{
 				"useinbandfec": "1"
@@ -370,7 +365,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		{
 			"clockRate":   90000,
 			"mimeType":    "video/VP8",
-			"name":        "VP8",
 			"parameters":
 			{
 				"x-google-start-bitrate": "1500"
@@ -411,7 +405,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		{
 			"clockRate":  90000,
 			"mimeType":   "video/rtx",
-			"name":       "rtx",
 			"parameters":
 			{
 			  "apt": "101"

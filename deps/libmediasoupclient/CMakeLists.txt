@@ -4,7 +4,14 @@ project(mediasoupclient LANGUAGES CXX)
 
 # Set version number.
 set(mediasoupclient_VERSION_MAJOR 0)
-set(mediasoupclient_VERSION_MINOR 1)
+set(mediasoupclient_VERSION_MINOR 0)
+set(mediasoupclient_VERSION_PATCH 1)
+
+# Configure a header file to pass the version.
+configure_file (
+  "${PROJECT_SOURCE_DIR}/version.hpp.in"
+  "${PROJECT_SOURCE_DIR}/include/version.hpp"
+)
 
 # C++ standard requirements.
 set(CMAKE_CXX_STANDARD 11)
@@ -75,6 +82,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/Device.cpp
 	src/Handler.cpp
 	src/Logger.cpp
+	src/mediasoupclient.cpp
 	src/PeerConnection.cpp
 	src/Producer.cpp
 	src/Transport.cpp
@@ -90,7 +98,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
 	"${PROJECT_SOURCE_DIR}/deps/libsdptransform/include"
-	${LIBWEBRTC_INCLUDE_PATH}
+	"${LIBWEBRTC_INCLUDE_PATH}"
+	"${LIBWEBRTC_INCLUDE_PATH}/third_party/abseil-cpp"
 )
 
 # Public (interface) dependencies.

@@ -215,8 +215,16 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	///////////////////////// Create Audio Producer //////////////////////////
 
 	auto audioTrack = createAudioTrack(std::to_string(rtc::CreateRandomId()));
+	std::vector<webrtc::RtpEncodingParameters> audioEncodings;
 
-	sendTransport->Produce(this, audioTrack);
+	/* clang-format off */
+	json codecOptions = {
+		{ "opusStereo", true },
+		{ "opusDtx",    true }
+	};
+	/* clang-format on */
+
+	sendTransport->Produce(this, audioTrack, audioEncodings, codecOptions);
 
 	///////////////////////// Create Video Producer //////////////////////////
 
