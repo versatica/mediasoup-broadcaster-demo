@@ -215,7 +215,6 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	///////////////////////// Create Audio Producer //////////////////////////
 
 	auto audioTrack = createAudioTrack(std::to_string(rtc::CreateRandomId()));
-	std::vector<webrtc::RtpEncodingParameters> audioEncodings;
 
 	/* clang-format off */
 	json codecOptions = {
@@ -224,7 +223,7 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	};
 	/* clang-format on */
 
-	sendTransport->Produce(this, audioTrack, audioEncodings, codecOptions);
+	sendTransport->Produce(this, audioTrack, nullptr, &codecOptions);
 
 	///////////////////////// Create Video Producer //////////////////////////
 
@@ -235,7 +234,7 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	encodings.emplace_back(webrtc::RtpEncodingParameters());
 	encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-	sendTransport->Produce(this, videoTrack, encodings);
+	sendTransport->Produce(this, videoTrack, &encodings, nullptr);
 
 	std::cout << "press enter key to leave...";
 	std::cin.get();
