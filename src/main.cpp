@@ -69,15 +69,7 @@ int main(int argc, char* argv[])
 
 	auto response = nlohmann::json::parse(r.text);
 
-	auto it = response.find("rtpCapabilities");
-	if (it == response.end())
-	{
-		std::cout << "'routerRtpCapabilities' missing in response" << std::endl;
-
-		return 1;
-	}
-
-	broadcaster.Start(baseUrl, *it);
+	broadcaster.Start(baseUrl, response);
 
 	std::cout << "thanks for flying libmediasoup broadcaster!" << std::endl;
 
