@@ -129,8 +129,8 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 		{ "displayName", "broadcaster"     },
 		{ "device",
 			{
-				{ "name",    "libmediasoupclient" },
-				{ "version", "0.0.1"              }
+				{ "name",    "libmediasoupclient"       },
+				{ "version", mediasoupclient::Version() }
 			}
 		}
 	};
