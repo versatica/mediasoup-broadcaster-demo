@@ -1,4 +1,4 @@
-# mediasoup-demo broadcaster (libmediasoupclient)
+# mediasoup broadcaster demo (libmediasoupclient)
 
 ## Usage
 
