@@ -68,7 +68,7 @@ void Broadcaster::OnConnectionStateChange(
  * Retrieve the remote producer ID and feed the caller with it.
  */
 std::future<std::string> Broadcaster::OnProduce(
-  const std::string& kind, json rtpParameters, const json& /*appData*/)
+  mediasoupclient::SendTransport* /*transport*/, const std::string& kind, json rtpParameters, const json& /*appData*/)
 {
 	std::cout << "OnProduce" << std::endl;
 	// std::cout << "rtpParameters: " << rtpParameters.dump(4) << std::endl;

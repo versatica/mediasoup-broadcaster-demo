@@ -18,7 +18,7 @@ SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcas
 ## Installation
 
 ```bash
-git clone https://github.com/jmillan/broadcaster.git
+git clone https://github.com/versatica/mediasoup-broadcaster-demo.git
 
 cmake . -Bbuild                                            \
 -DLIBWEBRTC_INCLUDE_PATH:PATH=/Your/libwebrtc/include/path \

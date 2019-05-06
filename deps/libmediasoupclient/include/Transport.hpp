@@ -38,7 +38,7 @@ public:
 public:
 	const std::string& GetId() const;
 	const std::string& GetConnectionState() const;
-	const nlohmann::json& GetAppData() const;
+	nlohmann::json& GetAppData();
 	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
@@ -92,7 +92,10 @@ public:
 	{
 	public:
 		virtual std::future<std::string> OnProduce(
-		  const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) = 0;
+		  SendTransport* transport,
+		  const std::string& kind,
+		  nlohmann::json rtpParameters,
+		  const nlohmann::json& appData) = 0;
 	};
 
 public:
@@ -209,10 +212,8 @@ inline const std::string& Transport::GetConnectionState() const
 	return PeerConnection::iceConnectionState2String[this->connectionState];
 }
 
-inline const nlohmann::json& Transport::GetAppData() const
+inline nlohmann::json& Transport::GetAppData()
 {
-	// TODO: what's the compiler warning:
-	// "access of moved variable appData"
 	return this->appData;
 }
 

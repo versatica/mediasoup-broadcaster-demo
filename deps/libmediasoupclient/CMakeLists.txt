@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 project(mediasoupclient LANGUAGES CXX)
 
 # Set version number.
-set(mediasoupclient_VERSION_MAJOR 0)
+set(mediasoupclient_VERSION_MAJOR 3)
 set(mediasoupclient_VERSION_MINOR 0)
-set(mediasoupclient_VERSION_PATCH 1)
+set(mediasoupclient_VERSION_PATCH 0)
 
 # Configure a header file to pass the version.
 configure_file (
@@ -18,9 +18,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Project options.
-option(BUILD_TESTS "Build unit tests" ON)
-option(LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
-option(LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
+option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" ON)
+option(MEDIASOUPCLIENT_LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
+option(MEDIASOUPCLIENT_LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
 # Project configuration.
 set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
@@ -35,11 +35,11 @@ if(NOT LIBWEBRTC_BINARY_PATH)
 endif()
 
 message ("\n=========== libmediasoupclient Build Configuration =============\n")
-message (STATUS "BUILD_TESTS            = " ${BUILD_TESTS})
-message (STATUS "LOG_TRACE              = " ${LOG_TRACE})
-message (STATUS "LOG_DEV                = " ${LOG_DEV})
-message (STATUS "LIBWEBRTC_INCLUDE_PATH = " ${LIBWEBRTC_INCLUDE_PATH})
-message (STATUS "LIBWEBRTC_BINARY_PATH  = " ${LIBWEBRTC_BINARY_PATH})
+message (STATUS "MEDIASOUPCLIENT_BUILD_TESTS  = " ${MEDIASOUPCLIENT_BUILD_TESTS})
+message (STATUS "MEDIASOUPCLIENT_LOG_TRACE    = " ${MEDIASOUPCLIENT_LOG_TRACE})
+message (STATUS "MEDIASOUPCLIENT_LOG_DEV      = " ${MEDIASOUPCLIENT_LOG_DEV})
+message (STATUS "LIBWEBRTC_INCLUDE_PATH       = " ${LIBWEBRTC_INCLUDE_PATH})
+message (STATUS "LIBWEBRTC_BINARY_PATH        = " ${LIBWEBRTC_BINARY_PATH})
 message ("")
 
 if (${BUILD_TESTS})
@@ -93,9 +93,6 @@ else()
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
 endif()
-
-target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility=hidden")
-target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility-inlines-hidden")
 
 # Private (implementation) header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)

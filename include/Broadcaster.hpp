@@ -15,7 +15,7 @@ public:
 	  mediasoupclient::Transport* transport, const nlohmann::json& transportLocalParameters);
 	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& connectionState);
 	std::future<std::string> OnProduce(
-	  const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData);
+	  mediasoupclient::SendTransport* /*transport*/, const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData);
 
 	/* Virtual methods inherited from Producer::Listener. */
 public:
