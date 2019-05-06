@@ -1,5 +1,7 @@
 # mediasoup broadcaster demo (libmediasoupclient)
 
+[libmediasoupclient][libmediasoupclient] based application that takes the system microphone and webcam and produces the media to the specified room in [mediasoup-demo][mediasoup-demo] application.
+
 ## Usage
 
 Once installed (see *Installation* below):
@@ -10,8 +12,8 @@ SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcas
 
 ## Dependencies (already included in the repository)
 
-### [libmediasoupclient](https://github.com/jmillan/libmediasoupclient)
-### [cpr](https://github.com/whoshuu/cpr)
+* [libmediasoupclient][libmediasoupclient]
+* [cpr][cpr]
 
 ## Installation
 
@@ -26,3 +28,10 @@ cmake . -Bbuild                                            \
 
 make -C build
 ```
+
+
+
+
+[mediasoup-demo]: https://github.com/versatica/libmediasoupclient
+[libmediasoupclient]: https://github.com/versatica/libmediasoupclient
+[cpr]: https://github.com/whoshuu/cpr
