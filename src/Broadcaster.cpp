@@ -75,8 +75,6 @@ std::future<std::string> Broadcaster::OnProduce(
 
 	std::promise<std::string> promise;
 
-	uint32_t producerId = rtc::CreateRandomId();
-
 	/* clang-format off */
 	json body =
 	{
@@ -103,7 +101,7 @@ std::future<std::string> Broadcaster::OnProduce(
 	auto response = json::parse(r.text);
 
 	auto it = response.find("id");
-	if (it == response.end())
+	if (it == response.end() || !it->is_string())
 		promise.set_exception(std::make_exception_ptr("'id' missing in response"));
 
 	promise.set_value((*it).get<std::string>());
