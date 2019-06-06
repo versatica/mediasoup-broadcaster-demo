@@ -2,18 +2,28 @@
 
 [libmediasoupclient][libmediasoupclient] based application that takes the system microphone and webcam and produces the media to the specified room in [mediasoup-demo][mediasoup-demo] application.
 
+
+## Resources
+
+* mediasoup website and documentation: [mediasoup.org](https://mediasoup.org)
+* mediasoup support forum: [mediasoup.discourse.group](https://mediasoup.discourse.group)
+
+
 ## Usage
 
-Once installed (see *Installation* below):
+Once installed (see **Installation** below):
 
 ```bash
 SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcaster
 ```
 
-## Dependencies (already included in the repository)
+## Dependencies
+
+Already included in the repository.
 
 * [libmediasoupclient][libmediasoupclient]
 * [cpr][cpr]
+
 
 ## Installation
 
