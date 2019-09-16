@@ -15,7 +15,7 @@ void signalHandler(int signum)
 	// Remove broadcaster from the server.
 	broadcaster.Stop();
 
-	exit(signum);
+	std::exit(signum);
 }
 
 int main(int argc, char* argv[])

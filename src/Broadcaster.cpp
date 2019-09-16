@@ -3,6 +3,7 @@
 #include "peerConnectionUtils.hpp"
 #include "json.hpp"
 #include <cpr/cpr.h>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -63,6 +64,12 @@ void Broadcaster::OnConnectionStateChange(
 {
 	std::cout << "[INFO] Broadcaster::OnConnectionStateChange() [connectionState:" << connectionState
 	          << "]" << std::endl;
+
+	if (connectionState == "failed")
+	{
+		Stop();
+		std::exit(0);
+	}
 }
 
 /* Producer::Listener::OnProduce
