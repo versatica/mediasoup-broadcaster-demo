@@ -57,7 +57,7 @@ private:
 // PeerConnection factory creation.
 static void createPeerConnectionFactory()
 {
-	std::cout << "createPeerConnectionFactory" << std::endl;
+	std::cout << "[INFO] peerConnectionUtils.createPeerConnectionFactory()" << std::endl;
 
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
@@ -88,7 +88,7 @@ static void createPeerConnectionFactory()
 // Audio source creation.
 static void createAudioSource()
 {
-	std::cout << "createAudiosource" << std::endl;
+	std::cout << "[INFO] peerConnectionUtils.createAudiosource()" << std::endl;
 
 	cricket::AudioOptions options;
 
@@ -101,7 +101,7 @@ static void createAudioSource()
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
 {
-	std::cout << "createAudioTrack" << std::endl;
+	std::cout << "[INFO] peerConnectionUtils.createAudioTrack()" << std::endl;
 
 	if (audioSource == nullptr)
 		createAudioSource();
@@ -112,7 +112,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::stri
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
-	std::cout << "createVideoTrack" << std::endl;
+	std::cout << "[INFO] peerConnectionUtils.createVideoTrack()" << std::endl;
 
 	if (videoDevice == nullptr)
 		videoDevice = CapturerTrackSource::Create();

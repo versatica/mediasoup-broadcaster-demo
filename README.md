@@ -17,6 +17,12 @@ Once installed (see **Installation** below):
 SERVER_URL=https://my.mediasoup-demo.org:4443 ROOM_ID=broadcaster build/broadcaster
 ```
 
+Environment variables:
+
+* `SERVER_URL`: The URL of the mediasoup-demo HTTP API server (required).
+* `ROOM_ID`: Room id (required).
+* `WEBRTC_DEBUG`: Enable libwebrtc full logging if "true" (optional).
+
 ## Dependencies
 
 Already included in the repository.

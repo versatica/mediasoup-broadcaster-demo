@@ -10,7 +10,7 @@ using json = nlohmann::json;
 
 void Broadcaster::OnTransportClose(mediasoupclient::Producer* /*producer*/)
 {
-	std::cout << "OnTransportClose" << std::endl;
+	std::cout << "[INFO] Broadcaster::OnTransportClose()" << std::endl;
 }
 
 /* Transport::Listener::OnConnect
@@ -21,8 +21,8 @@ void Broadcaster::OnTransportClose(mediasoupclient::Producer* /*producer*/)
 std::future<void> Broadcaster::OnConnect(
   mediasoupclient::Transport* /*transport*/, const json& dtlsParameters)
 {
-	std::cout << "OnConnect" << std::endl;
-	// std::cout << "dtlsParameters: " << dtlsParameters.dump(4) << std::endl;
+	std::cout << "[INFO] Broadcaster::OnConnect()" << std::endl;
+	// std::cout << "[INFO] dtlsParameters: " << dtlsParameters.dump(4) << std::endl;
 
 	std::promise<void> promise;
 
@@ -34,21 +34,23 @@ std::future<void> Broadcaster::OnConnect(
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
-	                     this->transportId + "/connect" },
-	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } })
-	           .get();
+ 		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" + this->transportId + "/connect" },
+ 		cpr::Body{ body.dump() },
+ 		cpr::Header{ { "Content-Type", "application/json" } })
+ 			.get();
 
-	if (r.status_code != 200)
+	if (r.status_code == 200)
 	{
-		std::cout << "unable to connect transport"
-		          << ". status code: " << r.status_code << ". body: " << r.text << std::endl;
+		promise.set_value();
+	}
+	else
+	{
+		std::cerr << "[ERROR] unable to connect transport"
+		          << " [status code:" << r.status_code << ", body:\""
+		          << r.text << "\"]" << std::endl;
 
 		promise.set_exception(std::make_exception_ptr(r.text));
 	}
-
-	promise.set_value();
 
 	return promise.get_future();
 }
@@ -59,7 +61,8 @@ std::future<void> Broadcaster::OnConnect(
 void Broadcaster::OnConnectionStateChange(
   mediasoupclient::Transport* transport, const std::string& connectionState)
 {
-	std::cout << "OnConnectionStateChange: connectionState: " << connectionState << std::endl;
+	std::cout << "[INFO] Broadcaster::OnConnectionStateChange() [connectionState:" << connectionState
+	          << "]" << std::endl;
 }
 
 /* Producer::Listener::OnProduce
@@ -70,8 +73,8 @@ void Broadcaster::OnConnectionStateChange(
 std::future<std::string> Broadcaster::OnProduce(
   mediasoupclient::SendTransport* /*transport*/, const std::string& kind, json rtpParameters, const json& /*appData*/)
 {
-	std::cout << "OnProduce" << std::endl;
-	// std::cout << "rtpParameters: " << rtpParameters.dump(4) << std::endl;
+	std::cout << "[INFO] Broadcaster::OnProduce()" << std::endl;
+	// std::cout << "[INFO] rtpParameters: " << rtpParameters.dump(4) << std::endl;
 
 	std::promise<std::string> promise;
 
@@ -84,41 +87,43 @@ std::future<std::string> Broadcaster::OnProduce(
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
-	                     this->transportId + "/producers" },
-	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } })
-	           .get();
+		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" + this->transportId + "/producers" },
+		cpr::Body{ body.dump() },
+	  cpr::Header{ { "Content-Type", "application/json" } })
+	  	.get();
 
-	if (r.status_code != 200)
+	if (r.status_code == 200)
 	{
-		std::cout << "unable to create producer"
-		          << ". status code: " << r.status_code << ". body: " << r.text << std::endl;
+		auto response = json::parse(r.text);
+
+		auto it = response.find("id");
+		if (it == response.end() || !it->is_string())
+			promise.set_exception(std::make_exception_ptr("'id' missing in response"));
+
+		promise.set_value((*it).get<std::string>());
+	}
+	else
+	{
+		std::cerr << "[ERROR] unable to create producer"
+		          << " [status code:" << r.status_code << ", body:\""
+		          << r.text << "\"]" << std::endl;
 
 		promise.set_exception(std::make_exception_ptr(r.text));
 	}
-
-	auto response = json::parse(r.text);
-
-	auto it = response.find("id");
-	if (it == response.end() || !it->is_string())
-		promise.set_exception(std::make_exception_ptr("'id' missing in response"));
-
-	promise.set_value((*it).get<std::string>());
 
 	return promise.get_future();
 }
 
 void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabilities)
 {
-	this->baseUrl = baseUrl;
+	std::cout << "[INFO] Broadcaster::Start()" << std::endl;
 
-	std::cout << ">>> loading device..." << std::endl;
+	this->baseUrl = baseUrl;
 
 	// Load the device.
 	this->device.Load(routerRtpCapabilities);
 
-	std::cout << ">>> creating Broadcaster..." << std::endl;
+	std::cout << "[INFO] creating Broadcaster..." << std::endl;
 
 	/* clang-format off */
 	json body =
@@ -135,20 +140,21 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-	           cpr::Url{ this->baseUrl + "/broadcasters" },
-	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } })
-	           .get();
+		cpr::Url{ this->baseUrl + "/broadcasters" },
+		cpr::Body{ body.dump() },
+		cpr::Header{ { "Content-Type", "application/json" } })
+			.get();
 
 	if (r.status_code != 200)
 	{
-		std::cout << "unable to create broadcaster"
-		          << "status code: " << r.status_code << "body: " << r.text << std::endl;
+		std::cerr << "[ERROR] unable to create Broadcaster"
+		          << " [status code:" << r.status_code << ", body:\""
+		          << r.text << "\"]" << std::endl;
 
 		return;
 	}
 
-	std::cout << ">>> creating mediasoup WebrtcTransport..." << std::endl;
+	std::cout << "[INFO] creating mediasoup WebRtcTransport..." << std::endl;
 
 	/* clang-format off */
 	body =
@@ -159,15 +165,16 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	/* clang-format on */
 
 	r = cpr::PostAsync(
-	      cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
-	      cpr::Body{ body.dump() },
-	      cpr::Header{ { "Content-Type", "application/json" } })
-	      .get();
+		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
+		cpr::Body{ body.dump() },
+		cpr::Header{ { "Content-Type", "application/json" } })
+			.get();
 
 	if (r.status_code != 200)
 	{
-		std::cout << "unable to create transport" << std::endl
-		          << "status code: " << r.status_code << "body: " << r.text << std::endl;
+		std::cerr << "[ERROR] unable to create mediasoup WebRtcTransport"
+		          << " [status code:" << r.status_code << ", body:\""
+		          << r.text << "\"]" << std::endl;
 
 		return;
 	}
@@ -176,30 +183,30 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 
 	if (response.find("id") == response.end())
 	{
-		std::cout << "'id' missing in response" << std::endl;
+		std::cerr << "[ERROR] 'id' missing in response" << std::endl;
 
 		return;
 	}
 	else if (response.find("iceParameters") == response.end())
 	{
-		std::cout << "'iceParametersd' missing in response" << std::endl;
+		std::cerr << "[ERROR] 'iceParametersd' missing in response" << std::endl;
 
 		return;
 	}
 	else if (response.find("iceCandidates") == response.end())
 	{
-		std::cout << "'iceCandidates' missing in response" << std::endl;
+		std::cerr << "[ERROR] 'iceCandidates' missing in response" << std::endl;
 
 		return;
 	}
 	else if (response.find("dtlsParameters") == response.end())
 	{
-		std::cout << "'dtlsParameters' missing in response" << std::endl;
+		std::cerr << "[ERROR] 'dtlsParameters' missing in response" << std::endl;
 
 		return;
 	}
 
-	std::cout << ">>> creating send transport..." << std::endl;
+	std::cout << "[INFO] creating SendTransport..." << std::endl;
 
 	this->transportId = response["id"].get<std::string>();
 
@@ -227,7 +234,7 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	}
 	else
 	{
-		std::cout << "cannot produce audio" << std::endl;
+		std::cerr << "[WARN] cannot produce audio" << std::endl;
 	}
 
 	///////////////////////// Create Video Producer //////////////////////////
@@ -245,17 +252,13 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	}
 	else
 	{
-		std::cout << "cannot produce video" << std::endl;
+		std::cerr << "[WARN] cannot produce video" << std::endl;
 	}
-
-	std::cout << "press enter key to leave...";
-	std::cin.get();
-
-	// Remove broadcaster from the server.
-	this->Stop();
 }
 
 void Broadcaster::Stop()
 {
+	std::cout << "[INFO] Broadcaster::Stop()" << std::endl;
+
 	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
 }
