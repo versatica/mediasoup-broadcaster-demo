@@ -1,4 +1,4 @@
-# mediasoup broadcaster demo (libmediasoupclient)
+# mediasoup broadcaster demo (libmediasoupclient v3)
 
 [libmediasoupclient][libmediasoupclient] based application that takes the system microphone and webcam and produces the media to the specified room in [mediasoup-demo][mediasoup-demo] application.
 
@@ -25,10 +25,9 @@ Environment variables:
 
 ## Dependencies
 
-Already included in the repository.
-
-* [libmediasoupclient][libmediasoupclient]
-* [cpr][cpr]
+* [libmediasoupclient][libmediasoupclient] (already included in the repository)
+* [cpr][cpr] (already included in the repository)
+* OpenSSL (must be installed in the system including its headers)
 
 
 ## Installation
@@ -36,14 +35,16 @@ Already included in the repository.
 ```bash
 git clone https://github.com/versatica/mediasoup-broadcaster-demo.git
 
-cmake . -Bbuild                                            \
--DLIBWEBRTC_INCLUDE_PATH:PATH=/Your/libwebrtc/include/path \
--DLIBWEBRTC_BINARY_PATH:PATH=/Your/libwebrtc/binary/path   \
--DOPENSSL_INCLUDE_DIR:PATH=/usr/local/opt/openssl/include  \
--DCMAKE_USE_OPENSSL=ON
+cmake . -Bbuild                                              \
+  -DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
+  -DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY}   \
+  -DOPENSSL_INCLUDE_DIR:PATH=${PATH_TO_OPENSSL_HEADERS}      \
+  -DCMAKE_USE_OPENSSL=ON
 
 make -C build
 ```
+
+*NOTE:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
 
 
 

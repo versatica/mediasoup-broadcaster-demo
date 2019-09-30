@@ -7,7 +7,7 @@ DEP=$1
 
 current_dir_name=${PROJECT_PWD##*/}
 if [ "${current_dir_name}" != "mediasoup-broadcaster-demo" ] && [ "${current_dir_name}" != "v3-mediasoup-broadcaster-demo" ] ; then
-	echo ">>> [ERROR] $(basename $0) must be called from broadcaster/ root directory" >&2
+	echo ">>> [ERROR] $(basename $0) must be called from root directory" >&2
 	exit 1
 fi
 
