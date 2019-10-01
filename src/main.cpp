@@ -3,6 +3,7 @@
 #include <cpr/cpr.h>
 #include <cstdlib>
 #include <iostream>
+#include <csignal> // sigsuspend()
 
 using json = nlohmann::json;
 
@@ -14,6 +15,8 @@ void signalHandler(int signum)
 
 	// Remove broadcaster from the server.
 	broadcaster.Stop();
+
+	std::cout << "[INFO] leaving!" << std::endl;
 
 	std::exit(signum);
 }
@@ -74,13 +77,9 @@ int main(int argc, char* argv[])
 
 	broadcaster.Start(baseUrl, response);
 
-	std::cout << "[INFO] press Enter key to leave...";
-	std::cin.get();
+	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave...";
 
-	// Remove broadcaster from the server.
-	broadcaster.Stop();
-
-	std::cout << "[INFO] thanks for flying libmediasoup broadcaster!" << std::endl;
+	(void)sigsuspend(nullptr);
 
 	return 0;
 }
