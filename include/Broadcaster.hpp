@@ -22,7 +22,7 @@ public:
 	void OnTransportClose(mediasoupclient::Producer* producer);
 
 public:
-	void Start(const std::string& baseUrl, const nlohmann::json& routerRtpCapabilities);
+	void Start(const std::string& baseUrl, bool useSimulcast, const nlohmann::json& routerRtpCapabilities);
 	void Stop();
 
 private:

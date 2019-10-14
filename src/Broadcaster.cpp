@@ -121,7 +121,7 @@ std::future<std::string> Broadcaster::OnProduce(
 	return promise.get_future();
 }
 
-void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabilities)
+void Broadcaster::Start(const std::string& baseUrl, bool useSimulcast, const json& routerRtpCapabilities)
 {
 	std::cout << "[INFO] Broadcaster::Start()" << std::endl;
 
@@ -250,12 +250,19 @@ void Broadcaster::Start(const std::string& baseUrl, const json& routerRtpCapabil
 	{
 		auto videoTrack = createVideoTrack(std::to_string(rtc::CreateRandomId()));
 
-		std::vector<webrtc::RtpEncodingParameters> encodings;
-		encodings.emplace_back(webrtc::RtpEncodingParameters());
-		encodings.emplace_back(webrtc::RtpEncodingParameters());
-		encodings.emplace_back(webrtc::RtpEncodingParameters());
+		if (useSimulcast)
+		{
+			std::vector<webrtc::RtpEncodingParameters> encodings;
+			encodings.emplace_back(webrtc::RtpEncodingParameters());
+			encodings.emplace_back(webrtc::RtpEncodingParameters());
+			encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-		sendTransport->Produce(this, videoTrack, &encodings, nullptr);
+			sendTransport->Produce(this, videoTrack, &encodings, nullptr);
+		}
+		else
+		{
+			sendTransport->Produce(this, videoTrack, nullptr, nullptr);
+		}
 	}
 	else
 	{
