@@ -1,9 +1,9 @@
 ﻿#include "Broadcaster.hpp"
 #include "mediasoupclient.hpp"
 #include <cpr/cpr.h>
+#include <csignal> // sigsuspend()
 #include <cstdlib>
 #include <iostream>
-#include <csignal> // sigsuspend()
 #include <string>
 
 using json = nlohmann::json;
@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
 	// Retrieve configuration from environment variables.
 	const char* envServerUrl    = std::getenv("SERVER_URL");
 	const char* envRoomId       = std::getenv("ROOM_ID");
+	const char* envEnableAudio  = std::getenv("ENABLE_AUDIO");
 	const char* envUseSimulcast = std::getenv("USE_SIMULCAST");
 	const char* envWebrtcDebug  = std::getenv("WEBRTC_DEBUG");
 
@@ -49,6 +50,11 @@ int main(int argc, char* argv[])
 
 	std::string baseUrl = envServerUrl;
 	baseUrl.append("/rooms/").append(envRoomId);
+
+	bool enableAudio = true;
+
+	if (envEnableAudio && std::string(envEnableAudio) == "false")
+		enableAudio = false;
 
 	bool useSimulcast = true;
 
@@ -78,15 +84,14 @@ int main(int argc, char* argv[])
 	if (r.status_code != 200)
 	{
 		std::cerr << "[ERROR] unable to retrieve room info"
-		          << " [status code:" << r.status_code << ", body:\""
-		          << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return 1;
 	}
 
 	auto response = nlohmann::json::parse(r.text);
 
-	broadcaster.Start(baseUrl, useSimulcast, response);
+	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response);
 
 	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave...";
 

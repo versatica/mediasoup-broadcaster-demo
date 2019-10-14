@@ -35,10 +35,11 @@ std::future<void> Broadcaster::OnConnect(
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
- 		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" + this->transportId + "/connect" },
- 		cpr::Body{ body.dump() },
- 		cpr::Header{ { "Content-Type", "application/json" } })
- 			.get();
+	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
+	                     this->transportId + "/connect" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } })
+	           .get();
 
 	if (r.status_code == 200)
 	{
@@ -47,8 +48,7 @@ std::future<void> Broadcaster::OnConnect(
 	else
 	{
 		std::cerr << "[ERROR] unable to connect transport"
-		          << " [status code:" << r.status_code << ", body:\""
-		          << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		promise.set_exception(std::make_exception_ptr(r.text));
 	}
@@ -78,7 +78,10 @@ void Broadcaster::OnConnectionStateChange(
  * Retrieve the remote producer ID and feed the caller with it.
  */
 std::future<std::string> Broadcaster::OnProduce(
-  mediasoupclient::SendTransport* /*transport*/, const std::string& kind, json rtpParameters, const json& /*appData*/)
+  mediasoupclient::SendTransport* /*transport*/,
+  const std::string& kind,
+  json rtpParameters,
+  const json& /*appData*/)
 {
 	std::cout << "[INFO] Broadcaster::OnProduce()" << std::endl;
 	// std::cout << "[INFO] rtpParameters: " << rtpParameters.dump(4) << std::endl;
@@ -94,10 +97,11 @@ std::future<std::string> Broadcaster::OnProduce(
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" + this->transportId + "/producers" },
-		cpr::Body{ body.dump() },
-	  cpr::Header{ { "Content-Type", "application/json" } })
-	  	.get();
+	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
+	                     this->transportId + "/producers" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } })
+	           .get();
 
 	if (r.status_code == 200)
 	{
@@ -112,8 +116,7 @@ std::future<std::string> Broadcaster::OnProduce(
 	else
 	{
 		std::cerr << "[ERROR] unable to create producer"
-		          << " [status code:" << r.status_code << ", body:\""
-		          << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		promise.set_exception(std::make_exception_ptr(r.text));
 	}
@@ -121,7 +124,8 @@ std::future<std::string> Broadcaster::OnProduce(
 	return promise.get_future();
 }
 
-void Broadcaster::Start(const std::string& baseUrl, bool useSimulcast, const json& routerRtpCapabilities)
+void Broadcaster::Start(
+  const std::string& baseUrl, bool enableAudio, bool useSimulcast, const json& routerRtpCapabilities)
 {
 	std::cout << "[INFO] Broadcaster::Start()" << std::endl;
 
@@ -147,16 +151,15 @@ void Broadcaster::Start(const std::string& baseUrl, bool useSimulcast, const jso
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-		cpr::Url{ this->baseUrl + "/broadcasters" },
-		cpr::Body{ body.dump() },
-		cpr::Header{ { "Content-Type", "application/json" } })
-			.get();
+	           cpr::Url{ this->baseUrl + "/broadcasters" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } })
+	           .get();
 
 	if (r.status_code != 200)
 	{
 		std::cerr << "[ERROR] unable to create Broadcaster"
-		          << " [status code:" << r.status_code << ", body:\""
-		          << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return;
 	}
@@ -172,16 +175,15 @@ void Broadcaster::Start(const std::string& baseUrl, bool useSimulcast, const jso
 	/* clang-format on */
 
 	r = cpr::PostAsync(
-		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
-		cpr::Body{ body.dump() },
-		cpr::Header{ { "Content-Type", "application/json" } })
-			.get();
+	      cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
+	      cpr::Body{ body.dump() },
+	      cpr::Header{ { "Content-Type", "application/json" } })
+	      .get();
 
 	if (r.status_code != 200)
 	{
 		std::cerr << "[ERROR] unable to create mediasoup WebRtcTransport"
-		          << " [status code:" << r.status_code << ", body:\""
-		          << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return;
 	}
@@ -226,7 +228,7 @@ void Broadcaster::Start(const std::string& baseUrl, bool useSimulcast, const jso
 
 	///////////////////////// Create Audio Producer //////////////////////////
 
-	if (this->device.CanProduce("audio"))
+	if (enableAudio && this->device.CanProduce("audio"))
 	{
 		auto audioTrack = createAudioTrack(std::to_string(rtc::CreateRandomId()));
 

@@ -22,6 +22,7 @@ Environment variables:
 * `SERVER_URL`: The URL of the mediasoup-demo HTTP API server (required).
 * `ROOM_ID`: Room id (required).
 * `USE_SIMULCAST`: If "false" no simulcast will be used (defaults to "true").
+* `ENABLE_AUDIO`: If "false" no audio Producer is created (defaults to "true").
 * `WEBRTC_DEBUG`: Enable libwebrtc logging. Can be "info", "warn" or "error" (optional).
 
 ## Dependencies

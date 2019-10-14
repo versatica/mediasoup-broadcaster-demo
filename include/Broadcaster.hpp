@@ -15,14 +15,21 @@ public:
 	  mediasoupclient::Transport* transport, const nlohmann::json& transportLocalParameters);
 	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& connectionState);
 	std::future<std::string> OnProduce(
-	  mediasoupclient::SendTransport* /*transport*/, const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData);
+	  mediasoupclient::SendTransport* /*transport*/,
+	  const std::string& kind,
+	  nlohmann::json rtpParameters,
+	  const nlohmann::json& appData);
 
 	/* Virtual methods inherited from Producer::Listener. */
 public:
 	void OnTransportClose(mediasoupclient::Producer* producer);
 
 public:
-	void Start(const std::string& baseUrl, bool useSimulcast, const nlohmann::json& routerRtpCapabilities);
+	void Start(
+	  const std::string& baseUrl,
+	  bool enableAudio,
+	  bool useSimulcast,
+	  const nlohmann::json& routerRtpCapabilities);
 	void Stop();
 
 private:
