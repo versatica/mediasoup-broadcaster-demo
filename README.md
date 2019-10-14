@@ -21,7 +21,7 @@ Environment variables:
 
 * `SERVER_URL`: The URL of the mediasoup-demo HTTP API server (required).
 * `ROOM_ID`: Room id (required).
-* `WEBRTC_DEBUG`: Enable libwebrtc full logging if "true" (optional).
+* `WEBRTC_DEBUG`: Enable libwebrtc logging. Can be "info", "warn" or "error" (optional).
 
 ## Dependencies
 

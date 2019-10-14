@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <csignal> // sigsuspend()
+#include <string>
 
 using json = nlohmann::json;
 
@@ -49,8 +50,12 @@ int main(int argc, char* argv[])
 	baseUrl.append("/rooms/").append(roomId);
 
 	// Set RTC logging severity.
-	if (webrtcDebug)
+	if (webrtcDebug && std::string(webrtcDebug) == "info")
 		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_INFO);
+	else if (webrtcDebug && std::string(webrtcDebug) == "warn")
+		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
+	else if (webrtcDebug && std::string(webrtcDebug) == "error")
+		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_ERROR);
 
 	auto logLevel = mediasoupclient::Logger::LogLevel::LOG_DEBUG;
 	mediasoupclient::Logger::SetLogLevel(logLevel);
