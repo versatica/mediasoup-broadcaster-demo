@@ -114,6 +114,9 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::stri
 {
 	std::cout << "[INFO] peerConnectionUtils.createVideoTrack()" << std::endl;
 
+	if (peerConnectionFactory == nullptr)
+		createPeerConnectionFactory();
+
 	if (videoDevice == nullptr)
 		videoDevice = CapturerTrackSource::Create();
 
