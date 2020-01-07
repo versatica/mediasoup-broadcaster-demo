@@ -5,12 +5,12 @@ project(mediasoupclient LANGUAGES CXX)
 # Set version number.
 set(mediasoupclient_VERSION_MAJOR 3)
 set(mediasoupclient_VERSION_MINOR 0)
-set(mediasoupclient_VERSION_PATCH 0)
+set(mediasoupclient_VERSION_PATCH 8)
 
 # Configure a header file to pass the version.
 configure_file (
-  "${PROJECT_SOURCE_DIR}/version.hpp.in"
-  "${PROJECT_SOURCE_DIR}/include/version.hpp"
+	"${PROJECT_SOURCE_DIR}/version.hpp.in"
+	"${PROJECT_SOURCE_DIR}/include/version.hpp"
 )
 
 # C++ standard requirements.
@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Project options.
-option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" ON)
+option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" OFF)
 option(MEDIASOUPCLIENT_LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
 option(MEDIASOUPCLIENT_LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
@@ -34,15 +34,22 @@ if(NOT LIBWEBRTC_BINARY_PATH)
 	message(FATAL_ERROR "LIBWEBRTC_BINARY_PATH not provided")
 endif()
 
-message ("\n=========== libmediasoupclient Build Configuration =============\n")
-message (STATUS "MEDIASOUPCLIENT_BUILD_TESTS  = " ${MEDIASOUPCLIENT_BUILD_TESTS})
-message (STATUS "MEDIASOUPCLIENT_LOG_TRACE    = " ${MEDIASOUPCLIENT_LOG_TRACE})
-message (STATUS "MEDIASOUPCLIENT_LOG_DEV      = " ${MEDIASOUPCLIENT_LOG_DEV})
-message (STATUS "LIBWEBRTC_INCLUDE_PATH       = " ${LIBWEBRTC_INCLUDE_PATH})
-message (STATUS "LIBWEBRTC_BINARY_PATH        = " ${LIBWEBRTC_BINARY_PATH})
-message ("")
+message("\n=========== libmediasoupclient Build Configuration ===========\n")
+message(STATUS "MEDIASOUPCLIENT_BUILD_TESTS : " ${MEDIASOUPCLIENT_BUILD_TESTS})
+message(STATUS "MEDIASOUPCLIENT_LOG_TRACE   : " ${MEDIASOUPCLIENT_LOG_TRACE})
+message(STATUS "MEDIASOUPCLIENT_LOG_DEV     : " ${MEDIASOUPCLIENT_LOG_DEV})
+message(STATUS "LIBWEBRTC_INCLUDE_PATH      : " ${LIBWEBRTC_INCLUDE_PATH})
+message(STATUS "LIBWEBRTC_BINARY_PATH       : " ${LIBWEBRTC_BINARY_PATH})
+message("")
 
-if (${BUILD_TESTS})
+# GCC >= 4.9 is required due to std::regex use.
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+		message(FATAL_ERROR "GCC version must be at least 4.9!")
+	endif()
+endif()
+
+if (${MEDIASOUPCLIENT_BUILD_TESTS})
 	add_subdirectory(test)
 endif()
 
@@ -56,27 +63,41 @@ set(
 	src/Device.cpp
 	src/Handler.cpp
 	src/Logger.cpp
-	src/mediasoupclient.cpp
 	src/PeerConnection.cpp
 	src/Producer.cpp
 	src/Transport.cpp
+	src/mediasoupclient.cpp
 	src/ortc.cpp
 	src/scalabilityMode.cpp
 	src/sdp/MediaSection.cpp
 	src/sdp/RemoteSdp.cpp
 	src/sdp/Utils.cpp
+	include/Consumer.hpp
+	include/Device.hpp
+	include/Handler.hpp
+	include/Logger.hpp
+	include/MediaSoupClientErrors.hpp
+	include/PeerConnection.hpp
+	include/Producer.hpp
+	include/Transport.hpp
+	include/mediasoupclient.hpp
+	include/ortc.hpp
+	include/scalabilityMode.hpp
+	include/sdp/MediaSection.hpp
+	include/sdp/RemoteSdp.hpp
+	include/sdp/Utils.hpp
 )
 
 # Create target.
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
-if(${LOG_TRACE})
+if(${MEDIASOUPCLIENT_LOG_TRACE})
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE MSC_LOG_TRACE=1
 	)
 endif()
 
-if(${LOG_DEV})
+if(${MEDIASOUPCLIENT_LOG_DEV})
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE MSC_LOG_DEV=1
 	)

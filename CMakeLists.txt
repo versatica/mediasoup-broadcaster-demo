@@ -43,9 +43,7 @@ endif(APPLE)
 target_sources(${PROJECT_NAME} PRIVATE
 	src/Broadcaster.cpp
 	src/main.cpp
-	src/peerConnectionUtils.cpp
-	src/VideoCapturer.cpp
-	src/VcmCapturer.cpp
+	src/MediaStreamTrackFactory.cpp
 )
 
 # Private (implementation) header files.
@@ -66,3 +64,14 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	mediasoupclient
 	${CPR_LIBRARIES}
 )
+
+# Create a library with required webrtc extra code and link against it.
+file(GLOB_RECURSE FAKE_AUDIO_CAPTURE
+	${LIBWEBRTC_BINARY_PATH}/pc/pc_test_utils/fake_audio_capture_module.o
+)
+
+set(WEBRTC_EXTRA_OBJS ${FAKE_AUDIO_CAPTURE})
+
+add_library (audio_capture STATIC ${WEBRTC_EXTRA_OBJS})
+set_target_properties(audio_capture PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries (${PROJECT_NAME} PUBLIC audio_capture)
