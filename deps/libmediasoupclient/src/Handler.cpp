@@ -12,6 +12,31 @@ using json = nlohmann::json;
 
 static json SctpNumStreams = { { "OS", 1024u }, { "MIS", 1024u } };
 
+static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding)
+{
+	jsonEncoding["active"] = encoding.active;
+
+	if (!encoding.rid.empty())
+		jsonEncoding["rid"] = encoding.rid;
+
+	if (encoding.max_bitrate_bps)
+		jsonEncoding["maxBitrate"] = *encoding.max_bitrate_bps;
+
+	if (encoding.max_framerate)
+		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
+
+	if (encoding.scale_framerate_down_by)
+		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
+
+	if (encoding.scale_resolution_down_by)
+		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
+
+	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
+		jsonEncoding["dtx"] = true;
+
+	jsonEncoding["networkPriority"] = encoding.network_priority;
+}
+
 namespace mediasoupclient
 {
 	/* Handler static methods. */
@@ -122,6 +147,7 @@ namespace mediasoupclient
 		// Set our DTLS role.
 		dtlsParameters["role"] = localDtlsRole;
 
+		// Update the remote DTLS role in the SDP.
 		std::string remoteDtlsRole = localDtlsRole == "client" ? "server" : "client";
 		this->remoteSdp->UpdateDtlsRole(remoteDtlsRole);
 
@@ -153,7 +179,7 @@ namespace mediasoupclient
 
 	SendHandler::SendData SendHandler::Send(
 	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+	  std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions)
 	{
 		MSC_TRACE();
@@ -164,9 +190,23 @@ namespace mediasoupclient
 
 		MSC_DEBUG("[kind:%s, track->id():%s]", track->kind().c_str(), track->id().c_str());
 
-		// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
-		// Once the issue is solved, no SDP will be required to enable simulcast.
-		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
+		if (encodings && encodings->size() > 1)
+		{
+			uint8_t idx = 0;
+			for (webrtc::RtpEncodingParameters& encoding : *encodings)
+			{
+				encoding.rid = std::string("r").append(std::to_string(idx++));
+			}
+		}
+
+		const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
+
+		webrtc::RtpTransceiverInit transceiverInit;
+
+		if (encodings && !encodings->empty())
+			transceiverInit.send_encodings = *encodings;
+
+		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track, transceiverInit);
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
@@ -187,19 +227,6 @@ namespace mediasoupclient
 			// Transport is not ready.
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
-
-			if (encodings != nullptr && encodings->size() > 1)
-			{
-				MSC_DEBUG("enabling legacy simulcast");
-
-				// We know that our media section is the last one.
-				auto numMediaSection   = localSdpObject["media"].size();
-				json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
-
-				Sdp::Utils::addLegacySimulcast(offerMediaObject, encodings->size());
-
-				offer = sdptransform::write(localSdpObject);
-			}
 
 			MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 
@@ -223,15 +250,39 @@ namespace mediasoupclient
 		auto localSdp       = this->pc->GetLocalDescription();
 		auto localSdpObject = sdptransform::parse(localSdp);
 
-		// We know that our media section is the last one.
-		auto numMediaSection   = localSdpObject["media"].size();
-		json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
+		json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
 
 		// Set RTCP CNAME.
 		sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
 
-		// Set RTP encodings.
-		sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
+		// Set RTP encodings by parsing the SDP offer if no encodings are given.
+		if (encodings == nullptr || encodings->empty())
+		{
+			sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
+		}
+		// Set RTP encodings by parsing the SDP offer and complete them with given
+		// one if just a single encoding has been given.
+		else if (encodings->size() == 1)
+		{
+			auto newEncodings = Sdp::Utils::getRtpEncodings(offerMediaObject);
+
+			fillJsonRtpEncodingParameters(newEncodings.front(), encodings->front());
+			sendingRtpParameters["encodings"] = newEncodings;
+		}
+
+		// Otherwise if more than 1 encoding are given use them verbatim.
+		else
+		{
+			sendingRtpParameters["encodings"] = json::array();
+
+			for (const auto& encoding : *encodings)
+			{
+				json jsonEncoding = {};
+
+				fillJsonRtpEncodingParameters(jsonEncoding, encoding);
+				sendingRtpParameters["encodings"].push_back(jsonEncoding);
+			}
+		}
 
 		// If VP8 and there is effective simulcast, add scalabilityMode to each encoding.
 		auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
@@ -253,6 +304,7 @@ namespace mediasoupclient
 
 		this->remoteSdp->Send(
 		  offerMediaObject,
+		  mediaSectionIdx.reuseMid,
 		  sendingRtpParameters,
 		  this->sendingRemoteRtpParametersByKind[track->kind()],
 		  codecOptions);
@@ -290,7 +342,7 @@ namespace mediasoupclient
 
 		transceiver->sender()->SetTrack(nullptr);
 		this->pc->RemoveTrack(transceiver->sender());
-		this->remoteSdp->DisableMediaSection(transceiver->mid().value());
+		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
 		// May throw.
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -464,8 +516,16 @@ namespace mediasoupclient
 
 		MSC_DEBUG("[id:%s, kind:%s]", id.c_str(), kind.c_str());
 
-		auto localId = std::to_string(this->nextMid);
-		auto& cname  = (*rtpParameters)["rtcp"]["cname"];
+		std::string localId;
+
+		// mid is optional, check whether it exists and is a non empty string.
+		auto midIt = rtpParameters->find("mid");
+		if (midIt != rtpParameters->end() && (midIt->is_string() && !midIt->get<std::string>().empty()))
+			localId = midIt->get<std::string>();
+		else
+			localId = std::to_string(this->mapMidTransceiver.size());
+
+		auto& cname = (*rtpParameters)["rtcp"]["cname"];
 
 		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 
@@ -516,9 +576,6 @@ namespace mediasoupclient
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
 
-		// Increase next MID.
-		this->nextMid++;
-
 		RecvData recvData;
 
 		recvData.localId     = localId;
@@ -543,7 +600,7 @@ namespace mediasoupclient
 
 		MSC_DEBUG("disabling mid:%s", transceiver->mid().value().c_str());
 
-		this->remoteSdp->DisableMediaSection(transceiver->mid().value());
+		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
 		auto offer = this->remoteSdp->GetSdp();
 

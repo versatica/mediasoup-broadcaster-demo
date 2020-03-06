@@ -176,7 +176,7 @@ namespace mediasoupclient
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions,
-	  json appData)
+	  const json& appData)
 	{
 		MSC_TRACE();
 
@@ -188,6 +188,9 @@ namespace mediasoupclient
 			MSC_THROW_INVALID_STATE_ERROR("track ended");
 		else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
 			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
+
+		if (codecOptions)
+			ortc::validateProducerCodecOptions(const_cast<json&>(*codecOptions));
 
 		std::string producerId;
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
@@ -332,7 +335,7 @@ namespace mediasoupclient
 	  const std::string& producerId,
 	  const std::string& kind,
 	  json* rtpParameters,
-	  json appData)
+	  const json& appData)
 	{
 		MSC_TRACE();
 

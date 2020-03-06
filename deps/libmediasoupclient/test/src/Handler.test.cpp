@@ -1,7 +1,7 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "fakeParameters.hpp"
 #include "MediaStreamTrackFactory.hpp"
+#include "fakeParameters.hpp"
 #include <catch.hpp>
 #include <iostream>
 #include <memory>
@@ -116,6 +116,15 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	SECTION("sendHandler.StopSending() fails if an invalid localId is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.StopSending(""), MediaSoupClientError);
+	}
+
+	SECTION("sendHandler.Sends() succeeds after stopping if track if provided")
+	{
+		mediasoupclient::SendHandler::SendData sendData;
+
+		REQUIRE_NOTHROW(sendData = sendHandler.Send(track, nullptr, nullptr));
+
+		localId = sendData.localId;
 	}
 
 	SECTION("sendHandler.StopSending() succeeds if track is being sent")

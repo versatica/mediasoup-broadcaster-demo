@@ -92,7 +92,7 @@ namespace mediasoupclient
 	public:
 		SendData Send(
 		  webrtc::MediaStreamTrackInterface* track,
-		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+		  std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions);
 		void StopSending(const std::string& localId);
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
@@ -131,10 +131,6 @@ namespace mediasoupclient
 		void StopReceiving(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-
-	private:
-		// MID value counter. It must be incremented for each new m= section.
-		uint32_t nextMid{ 0 };
 	};
 } // namespace mediasoupclient
 

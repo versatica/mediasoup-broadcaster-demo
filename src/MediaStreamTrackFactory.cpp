@@ -8,7 +8,7 @@
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "pc/test/fake_audio_capture_module.h"
-#include "pc/test/fake_video_track_source.h"
+#include "pc/test/fake_periodic_video_track_source.h"
 
 using namespace mediasoupclient;
 
@@ -82,5 +82,9 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::stri
 	if (!factory)
 		createFactory();
 
-	return factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
+	auto video_track_source = new rtc::RefCountedObject<webrtc::FakePeriodicVideoTrackSource>(
+			false /* remote */);
+
+	return factory->CreateVideoTrack(
+			rtc::CreateRandomUuid(), video_track_source);
 }

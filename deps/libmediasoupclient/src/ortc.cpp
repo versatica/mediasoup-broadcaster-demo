@@ -135,7 +135,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.
@@ -365,7 +365,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.
@@ -508,7 +508,7 @@ namespace mediasoupclient
 			auto reducedSizeIt = rtcp.find("reducedSize");
 
 			// cname is optional.
-			if (cnameIt != rtcp.end() && (!cnameIt->is_string() || cnameIt->get<std::string>().empty()))
+			if (cnameIt != rtcp.end() && !cnameIt->is_string())
 				MSC_THROW_TYPE_ERROR("invalid rtcp.cname");
 
 			// reducedSize is optional. If unset set it to true.
@@ -669,6 +669,225 @@ namespace mediasoupclient
 			// protocol is optional. If unset set it to empty string.
 			if (protocolIt == params.end() || !protocolIt->is_string())
 				params["protocol"] = "";
+		}
+
+		/**
+		 * Validates IceParameters. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateIceParameters(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto usernameFragmentIt = params.find("usernameFragment");
+			auto passwordIt         = params.find("password");
+			auto iceLiteIt          = params.find("iceLite");
+
+			// usernameFragment is mandatory.
+			if (
+			  usernameFragmentIt == params.end() ||
+			  (!usernameFragmentIt->is_string() || usernameFragmentIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.usernameFragment");
+
+			// userFragment is mandatory.
+			if (passwordIt == params.end() || (!passwordIt->is_string() || passwordIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.password");
+
+			// iceLIte is optional. If unset set it to false.
+			if (iceLiteIt == params.end() || !iceLiteIt->is_boolean())
+				params["iceLite"] = false;
+		}
+
+		/**
+		 * Validates IceCandidate. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateIceCandidate(json& params)
+		{
+			MSC_TRACE();
+
+			static const std::regex ProtocolRegex(
+			  "(udp|tcp)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+			static const std::regex TypeRegex(
+			  "(host|srflx|prflx|relay)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto foundationIt = params.find("foundation");
+			auto priorityIt   = params.find("priority");
+			auto ipIt         = params.find("ip");
+			auto protocolIt   = params.find("protocol");
+			auto portIt       = params.find("port");
+			auto typeIt       = params.find("type");
+
+			// foundation is mandatory.
+			if (
+			  foundationIt == params.end() ||
+			  (!foundationIt->is_string() || foundationIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.foundation");
+
+			// priority is mandatory.
+			if (priorityIt == params.end() || !priorityIt->is_number_unsigned())
+				MSC_THROW_TYPE_ERROR("missing params.priority");
+
+			// ip is mandatory.
+			if (ipIt == params.end() || (!ipIt->is_string() || ipIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.ip");
+
+			// protocol is mandatory.
+			if (protocolIt == params.end() || (!protocolIt->is_string() || protocolIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.protocol");
+
+			std::smatch protocolMatch;
+			std::regex_match(protocolIt->get<std::string>(), protocolMatch, ProtocolRegex);
+
+			if (protocolMatch.empty())
+				MSC_THROW_TYPE_ERROR("invalid params.protocol");
+
+			// port is mandatory.
+			if (portIt == params.end() || !portIt->is_number_unsigned())
+				MSC_THROW_TYPE_ERROR("missing params.port");
+
+			// type is mandatory.
+			if (typeIt == params.end() || (!typeIt->is_string() || typeIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.type");
+
+			std::smatch typeMatch;
+			std::regex_match(typeIt->get<std::string>(), typeMatch, TypeRegex);
+
+			if (typeMatch.empty())
+				MSC_THROW_TYPE_ERROR("invalid params.type");
+		}
+
+		/**
+		 * Validates IceCandidates. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateIceCandidates(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_array())
+				MSC_THROW_TYPE_ERROR("params is not an array");
+
+			for (auto& iceCandidate : params)
+				validateIceCandidate(iceCandidate);
+		}
+
+		/**
+		 * Validates DtlsFingerprint. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateDtlsFingerprint(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto algorithmIt = params.find("algorithm");
+			auto valueIt     = params.find("value");
+
+			// foundation is mandatory.
+			if (
+			  algorithmIt == params.end() ||
+			  (!algorithmIt->is_string() || algorithmIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.algorithm");
+
+			// foundation is mandatory.
+			if (valueIt == params.end() || (!valueIt->is_string() || valueIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.value");
+		}
+
+		/**
+		 * Validates DtlsParameters. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateDtlsParameters(json& params)
+		{
+			MSC_TRACE();
+
+			static const std::regex RoleRegex(
+			  "(auto|client|server)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto roleIt         = params.find("role");
+			auto fingerprintsIt = params.find("fingerprints");
+
+			// role is mandatory.
+			if (roleIt == params.end() || (!roleIt->is_string() || roleIt->get<std::string>().empty()))
+				MSC_THROW_TYPE_ERROR("missing params.role");
+
+			std::smatch roleMatch;
+			std::regex_match(roleIt->get<std::string>(), roleMatch, RoleRegex);
+
+			if (roleMatch.empty())
+				MSC_THROW_TYPE_ERROR("invalid params.role");
+
+			// fingerprints is mandatory.
+			if (fingerprintsIt == params.end() || (!fingerprintsIt->is_array() || fingerprintsIt->empty()))
+				MSC_THROW_TYPE_ERROR("missing params.fingerprints");
+
+			for (auto& fingerprint : *fingerprintsIt)
+				validateDtlsFingerprint(fingerprint);
+		}
+
+		/**
+		 * Validates Producer codec options. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateProducerCodecOptions(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto opusStereoIt              = params.find("opusStereo");
+			auto opusFecIt                 = params.find("opusFec");
+			auto opusDtxIt                 = params.find("opusDtx");
+			auto opusMaxPlaybackRateIt     = params.find("opusMaxPlaybackRate");
+			auto opusPtimeIt               = params.find("opusPtime");
+			auto videoGoogleStartBitrateIt = params.find("videoGoogleStartBitrate");
+			auto videoGoogleMaxBitrateIt   = params.find("videoGoogleMaxBitrate");
+			auto videoGoogleMinBitrateIt   = params.find("videoGoogleMinBitrate");
+
+			if (opusStereoIt != params.end() && !opusStereoIt->is_boolean())
+				MSC_THROW_TYPE_ERROR("invalid params.opusStereo");
+
+			if (opusFecIt != params.end() && !opusFecIt->is_boolean())
+				MSC_THROW_TYPE_ERROR("invalid params.opusFec");
+
+			if (opusDtxIt != params.end() && !opusDtxIt->is_boolean())
+				MSC_THROW_TYPE_ERROR("invalid params.opusDtx");
+
+			if (opusMaxPlaybackRateIt != params.end() && !opusMaxPlaybackRateIt->is_number_unsigned())
+				MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
+
+			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("invalid params.opusPtime");
+
+			if (videoGoogleStartBitrateIt != params.end() && !videoGoogleStartBitrateIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleStartBitrate");
+
+			if (videoGoogleMaxBitrateIt != params.end() && !videoGoogleMaxBitrateIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMaxBitrate");
+
+			if (videoGoogleMinBitrateIt != params.end() && !videoGoogleMinBitrateIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMinBitrate");
 		}
 
 		/**
@@ -979,9 +1198,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["sendId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 
@@ -1071,9 +1291,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["sendId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 
@@ -1164,10 +1385,10 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			// This may throw.
-			json vaidatedRtpParameters = videoRtpParameters;
+			json validatedRtpParameters = videoRtpParameters;
 
 			// This may throw.
-			ortc::validateRtpParameters(vaidatedRtpParameters);
+			ortc::validateRtpParameters(validatedRtpParameters);
 
 			// clang-format off
 			json rtpParameters =
@@ -1185,9 +1406,9 @@ namespace mediasoupclient
 			};
 			// clang-format on
 
-			rtpParameters["codecs"].push_back(vaidatedRtpParameters["codecs"][0]);
+			rtpParameters["codecs"].push_back(validatedRtpParameters["codecs"][0]);
 
-			for (auto& ext : vaidatedRtpParameters["headerExtensions"])
+			for (auto& ext : validatedRtpParameters["headerExtensions"])
 			{
 				// clang-format off
 				if (

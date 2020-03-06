@@ -7,7 +7,7 @@ set(broadcaster_VERSION_MAJOR 0)
 set(broadcaster_VERSION_MINOR 1)
 
 # C++ standard requirements.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add some compile flags to our source files.
@@ -66,12 +66,14 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 )
 
 # Create a library with required webrtc extra code and link against it.
-file(GLOB_RECURSE FAKE_AUDIO_CAPTURE
+file(GLOB_RECURSE WEBRTC_EXTRAS
 	${LIBWEBRTC_BINARY_PATH}/pc/pc_test_utils/fake_audio_capture_module.o
+	${LIBWEBRTC_BINARY_PATH}/rtc_base/task_queue_for_test/task_queue_for_test.o
+	${LIBWEBRTC_BINARY_PATH}/media/rtc_media_tests_utils/fake_frame_source.o
 )
 
-set(WEBRTC_EXTRA_OBJS ${FAKE_AUDIO_CAPTURE})
+set(WEBRTC_EXTRA_OBJS ${WEBRTC_EXTRAS})
 
-add_library (audio_capture STATIC ${WEBRTC_EXTRA_OBJS})
-set_target_properties(audio_capture PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries (${PROJECT_NAME} PUBLIC audio_capture)
+add_library (webrtc_extras STATIC ${WEBRTC_EXTRA_OBJS})
+set_target_properties(webrtc_extras PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries (${PROJECT_NAME} PUBLIC webrtc_extras)
