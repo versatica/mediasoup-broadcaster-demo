@@ -46,9 +46,9 @@ cmake . -Bbuild                                              \
 make -C build
 ```
 
-*NOTE:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
+*NOTE 1:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
 
-
+*NOTE 2:* When building libwebrtc, you need to include `rtc_include_tests=true` into arguments given to gn gen.
 
 
 [mediasoup-demo]: https://github.com/versatica/libmediasoupclient
