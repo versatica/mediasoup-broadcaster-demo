@@ -7,8 +7,8 @@
 #include "api/create_peerconnection_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "pc/test/fake_audio_capture_module.h"
-#include "pc/test/fake_periodic_video_track_source.h"
+#include "fake_audio_capture_module.h"
+#include "fake_periodic_video_track_source.h"
 
 using namespace mediasoupclient;
 

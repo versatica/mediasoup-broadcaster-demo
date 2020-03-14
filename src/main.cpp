@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
 
 	std::cout << "[INFO] welcome to mediasoup broadcaster app!\n" << std::endl;
 
-	std::cout << "[INFO] verifying that room '" << envRoomId << "' exists..." << std::endl;
-	auto r = cpr::GetAsync(cpr::Url{ baseUrl }).get();
+	std::cout << "[INFO] verifying that room '" << baseUrl << "' exists..." << std::endl;
+	auto r = cpr::GetAsync(cpr::Url{ baseUrl }, cpr::VerifySsl{false}).get();
 
 	if (r.status_code != 200)
 	{
@@ -87,15 +87,22 @@ int main(int argc, char* argv[])
 		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return 1;
+	} else {
+		std::cout << "Found room" << r.text << std::endl;
 	}
 
 	auto response = nlohmann::json::parse(r.text);
 
 	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response);
 
-	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave...";
+	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
 
 	(void)sigsuspend(nullptr);
+
+	std::cout << "[INFO] press any key + ENTER to leave" << std::endl;
+	int c=getchar();
+
+	broadcaster.Stop();
 
 	return 0;
 }

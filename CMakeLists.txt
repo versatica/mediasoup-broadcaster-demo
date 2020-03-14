@@ -44,6 +44,8 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/Broadcaster.cpp
 	src/main.cpp
 	src/MediaStreamTrackFactory.cpp
+	src/fake_audio_capture_module.cc
+	src/fake_frame_source.cc
 )
 
 # Private (implementation) header files.
@@ -65,15 +67,15 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	${CPR_LIBRARIES}
 )
 
-# Create a library with required webrtc extra code and link against it.
-file(GLOB_RECURSE WEBRTC_EXTRAS
-	${LIBWEBRTC_BINARY_PATH}/pc/pc_test_utils/fake_audio_capture_module.o
-	${LIBWEBRTC_BINARY_PATH}/rtc_base/task_queue_for_test/task_queue_for_test.o
-	${LIBWEBRTC_BINARY_PATH}/media/rtc_media_tests_utils/fake_frame_source.o
-)
+# # Create a library with required webrtc extra code and link against it.
+# file(GLOB_RECURSE WEBRTC_EXTRAS
+# 	${LIBWEBRTC_BINARY_PATH}/pc/pc_test_utils/fake_audio_capture_module.o
+# 	${LIBWEBRTC_BINARY_PATH}/rtc_base/task_queue_for_test/task_queue_for_test.o
+# 	${LIBWEBRTC_BINARY_PATH}/media/rtc_media_tests_utils/fake_frame_source.o
+# )
 
-set(WEBRTC_EXTRA_OBJS ${WEBRTC_EXTRAS})
+# set(WEBRTC_EXTRA_OBJS ${WEBRTC_EXTRAS})
 
-add_library (webrtc_extras STATIC ${WEBRTC_EXTRA_OBJS})
-set_target_properties(webrtc_extras PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries (${PROJECT_NAME} PUBLIC webrtc_extras)
+# add_library (webrtc_extras STATIC ${WEBRTC_EXTRA_OBJS})
+# set_target_properties(webrtc_extras PROPERTIES LINKER_LANGUAGE CXX)
+# target_link_libraries (${PROJECT_NAME} PUBLIC webrtc_extras)
