@@ -9,6 +9,9 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "fake_audio_capture_module.h"
 #include "fake_periodic_video_track_source.h"
+#include "frame_generator_capturer_video_track_source.h"
+#include "system_wrappers/include/clock.h"
+#include <iostream>
 
 using namespace mediasoupclient;
 
@@ -87,4 +90,28 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::stri
 
 	return factory->CreateVideoTrack(
 			rtc::CreateRandomUuid(), video_track_source);
+}
+
+webrtc::Clock* clock_ = nullptr;
+static rtc::scoped_refptr<webrtc::FrameGeneratorCapturerVideoTrackSource> video_track_source_;
+
+rtc::scoped_refptr<webrtc::VideoTrackInterface> createSquaresVideoTrack(const std::string& label)
+{
+	if (!clock_) {
+		std::cout << "[INFO] Getting clock" << std::endl;
+		clock_ = webrtc::Clock::GetRealTimeClock();
+
+	}
+	if (!factory)
+		createFactory();
+
+	std::cout << "[INFO] Getting config" << std::endl;
+
+	std::cout << "[INFO] Getting frame generator" << std::endl;
+	video_track_source_ = new rtc::RefCountedObject<webrtc::FrameGeneratorCapturerVideoTrackSource>(clock_);
+	video_track_source_->Start();
+
+	std::cout << "[INFO] Creating Video Track" << std::endl;
+	return factory->CreateVideoTrack(
+			rtc::CreateRandomUuid(), video_track_source_);
 }

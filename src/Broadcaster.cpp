@@ -254,7 +254,7 @@ void Broadcaster::Start(
 
 	if (this->device.CanProduce("video"))
 	{
-		auto videoTrack = createVideoTrack(std::to_string(rtc::CreateRandomId()));
+		auto videoTrack = createSquaresVideoTrack(std::to_string(rtc::CreateRandomId()));
 
 		if (useSimulcast)
 		{

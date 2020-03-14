@@ -46,6 +46,10 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/MediaStreamTrackFactory.cpp
 	src/fake_audio_capture_module.cc
 	src/fake_frame_source.cc
+	src/frame_generator_capturer.cc
+	src/frame_generator.cc
+	src/test_video_capturer.cc
+	src/frame_utils.cc
 )
 
 # Private (implementation) header files.
