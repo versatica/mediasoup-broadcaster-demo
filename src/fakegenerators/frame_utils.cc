@@ -13,7 +13,7 @@
 
 #include "api/video/i420_buffer.h"
 #include "api/video/video_frame.h"
-#include "frame_utils.h"
+#include "fakegenerators/frame_utils.h"
 
 namespace webrtc {
 namespace test {

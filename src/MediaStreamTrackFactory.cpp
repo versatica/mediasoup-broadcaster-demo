@@ -1,5 +1,7 @@
 #define MSC_CLASS "MediaStreamTrackFactory"
 
+#include <iostream>
+
 #include "MediaStreamTrackFactory.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
@@ -7,11 +9,11 @@
 #include "api/create_peerconnection_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "fake_audio_capture_module.h"
-#include "fake_periodic_video_track_source.h"
-#include "frame_generator_capturer_video_track_source.h"
+#include "fakegenerators/fake_audio_capture_module.h"
+#include "fakegenerators/fake_periodic_video_track_source.h"
+#include "fakegenerators/frame_generator_capturer_video_track_source.h"
 #include "system_wrappers/include/clock.h"
-#include <iostream>
+
 
 using namespace mediasoupclient;
 

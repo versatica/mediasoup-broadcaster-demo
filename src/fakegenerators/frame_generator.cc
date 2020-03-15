@@ -7,7 +7,7 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "test/frame_generator.h"
+#include "fakegenerators/frame_generator.h"
 
 #include <string.h>
 #include <cstdint>
@@ -28,7 +28,7 @@
 #include "rtc_base/keep_ref_until_done.h"
 #include "rtc_base/random.h"
 #include "system_wrappers/include/clock.h"
-#include "frame_utils.h"
+#include "fakegenerators/frame_utils.h"
 
 namespace webrtc {
 namespace test {
