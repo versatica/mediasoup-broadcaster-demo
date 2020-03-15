@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 
 		return 1;
 	} else {
-		std::cout << "Found room" << envRoomId << std::endl;
+		std::cout << "[INFO] Found room" << envRoomId << std::endl;
 	}
 
 	auto response = nlohmann::json::parse(r.text);
@@ -98,11 +98,6 @@ int main(int argc, char* argv[])
 	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
 
 	(void)sigsuspend(nullptr);
-
-	std::cout << "[INFO] press any key + ENTER to leave" << std::endl;
-	int c = getchar();
-
-	broadcaster.Stop();
 
 	return 0;
 }
