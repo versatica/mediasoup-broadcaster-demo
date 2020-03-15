@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 	std::cout << "[INFO] welcome to mediasoup broadcaster app!\n" << std::endl;
 
 	std::cout << "[INFO] verifying that room '" << baseUrl << "' exists..." << std::endl;
-	auto r = cpr::GetAsync(cpr::Url{ baseUrl }, cpr::VerifySsl{false}).get();
+	auto r = cpr::GetAsync(cpr::Url{ baseUrl }).get();
 
 	if (r.status_code != 200)
 	{
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 	(void)sigsuspend(nullptr);
 
 	std::cout << "[INFO] press any key + ENTER to leave" << std::endl;
-	int c=getchar();
+	int c = getchar();
 
 	broadcaster.Stop();
 
