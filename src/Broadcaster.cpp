@@ -38,8 +38,7 @@ std::future<void> Broadcaster::OnConnect(
 	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
 	                     this->transportId + "/connect" },
 	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{false})
+	           cpr::Header{ { "Content-Type", "application/json" } })
 	           .get();
 
 	if (r.status_code == 200)
@@ -101,8 +100,7 @@ std::future<std::string> Broadcaster::OnProduce(
 	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
 	                     this->transportId + "/producers" },
 	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{false})
+	           cpr::Header{ { "Content-Type", "application/json" } })
 	           .get();
 
 	if (r.status_code == 200)
@@ -155,8 +153,7 @@ void Broadcaster::Start(
 	auto r = cpr::PostAsync(
 	           cpr::Url{ this->baseUrl + "/broadcasters" },
 	           cpr::Body{ body.dump() },
-	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{false})
+	           cpr::Header{ { "Content-Type", "application/json" } })
 	           .get();
 
 	if (r.status_code != 200)
@@ -180,8 +177,7 @@ void Broadcaster::Start(
 	r = cpr::PostAsync(
 	      cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
 	      cpr::Body{ body.dump() },
-	      cpr::Header{ { "Content-Type", "application/json" } }, 
-		  cpr::VerifySsl{false})
+	      cpr::Header{ { "Content-Type", "application/json" } })
 	      .get();
 
 	if (r.status_code != 200)
@@ -254,7 +250,7 @@ void Broadcaster::Start(
 
 	if (this->device.CanProduce("video"))
 	{
-		auto videoTrack = createVideoTrack(std::to_string(rtc::CreateRandomId()));
+		auto videoTrack = createSquaresVideoTrack(std::to_string(rtc::CreateRandomId()));
 
 		if (useSimulcast)
 		{
@@ -280,5 +276,5 @@ void Broadcaster::Stop()
 {
 	std::cout << "[INFO] Broadcaster::Stop()" << std::endl;
 
-	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }, cpr::VerifySsl{false}).get();
+	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
 }
