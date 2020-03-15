@@ -99,8 +99,6 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> createSquaresVideoTrack(const st
 	if (!factory)
 		createFactory();
 
-	std::cout << "[INFO] Getting config" << std::endl;
-
 	std::cout << "[INFO] Getting frame generator" << std::endl;
 	auto video_track_source_ = new rtc::RefCountedObject<webrtc::FrameGeneratorCapturerVideoTrackSource>(webrtc::Clock::GetRealTimeClock());
 	video_track_source_->Start();
