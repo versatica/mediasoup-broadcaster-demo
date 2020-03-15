@@ -1,6 +1,6 @@
 # mediasoup broadcaster demo (libmediasoupclient v3)
 
-[libmediasoupclient][libmediasoupclient] based application that takes the system microphone and webcam and produces the media to the specified room in [mediasoup-demo][mediasoup-demo] application.
+[libmediasoupclient][libmediasoupclient] based application that produces artificial sound and video to the specified room in [mediasoup-demo] [mediasoup-demo] application. The video consists of some colored rectangles moving towards the lower-right corner of the image. Credit for the artificial media creation goes to the WEBRTC team - see LICENSE-WEBRTC file in top-folder.
 
 
 ## Resources
@@ -48,9 +48,6 @@ make -C build
 
 *NOTE 1:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
 
-*NOTE 2:* When building libwebrtc, you need to include `rtc_include_tests=true` into arguments given to gn gen.
-
-
-[mediasoup-demo]: https://github.com/versatica/libmediasoupclient
+[mediasoup-demo]: https://github.com/versatica/mediasoup-demo
 [libmediasoupclient]: https://github.com/versatica/libmediasoupclient
 [cpr]: https://github.com/whoshuu/cpr
