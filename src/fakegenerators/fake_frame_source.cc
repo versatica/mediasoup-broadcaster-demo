@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/fake_frame_source.h"
+#include "media/base/fake_frame_source.h"
 
 #include "api/scoped_refptr.h"
 #include "api/video/i420_buffer.h"
