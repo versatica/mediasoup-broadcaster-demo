@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 
 		return 1;
 	} else {
-		std::cout << "[INFO] Found room" << envRoomId << std::endl;
+		std::cout << "[INFO] found room" << envRoomId << std::endl;
 	}
 
 	auto response = nlohmann::json::parse(r.text);

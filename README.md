@@ -46,6 +46,10 @@ cmake . -Bbuild                                              \
 make -C build
 ```
 
+## License
+
+Some files contain specific license agreements, written in the beginning of the respective files.
+
 *NOTE 1:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
 
 [mediasoup-demo]: https://github.com/versatica/mediasoup-demo
