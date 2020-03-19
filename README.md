@@ -1,6 +1,6 @@
 # mediasoup broadcaster demo (libmediasoupclient v3)
 
-[libmediasoupclient][libmediasoupclient] based application that produces artificial sound and video to the specified room in [mediasoup-demo] [mediasoup-demo] application. The video consists of some colored rectangles moving towards the lower-right corner of the image. Credit for the artificial media creation goes to the WEBRTC team - see LICENSE-WEBRTC file in top-folder.
+[libmediasoupclient][libmediasoupclient] based application that produces artificial sound and video to the specified room in [mediasoup-demo] [mediasoup-demo] application. The video consists of some colored rectangles moving towards the lower-right corner of the image. Credit for the artificial media creation goes to the WEBRTC team ([LICENSE](https://webrtc.googlesource.com/src/+/refs/heads/master/LICENSE)).
 
 
 ## Resources
