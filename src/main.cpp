@@ -87,13 +87,15 @@ int main(int argc, char* argv[])
 		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return 1;
+	} else {
+		std::cout << "[INFO] found room" << envRoomId << std::endl;
 	}
 
 	auto response = nlohmann::json::parse(r.text);
 
 	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response);
 
-	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave...";
+	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
 
 	(void)sigsuspend(nullptr);
 
