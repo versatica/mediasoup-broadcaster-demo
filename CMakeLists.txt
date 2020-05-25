@@ -51,6 +51,11 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/fakegenerators/test_video_capturer.cc
 	src/fakegenerators/frame_utils.cc
 	src/fakegenerators/task_queue_for_test.cc
+	src/fakegenerators/file_utils.cc
+	src/fakegenerators/file_utils_override.cc
+	src/fakegenerators/create_frame_generator.cc
+	src/fakegenerators/ivf_video_frame_generator.cc
+	src/fakegenerators/mac_file_utils.mm
 )
 
 # Private (implementation) header files.
