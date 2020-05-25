@@ -10,6 +10,7 @@ set(SOURCE_FILES
 	test/testsupport/ivf_video_frame_generator.cc
 	test/testsupport/file_utils.cc
 	test/testsupport/file_utils_override.cc
+	test/testsupport/ios_file_utils.mm
 	test/testsupport/mac_file_utils.mm
 )
 
