@@ -44,36 +44,27 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/Broadcaster.cpp
 	src/main.cpp
 	src/MediaStreamTrackFactory.cpp
-	src/fakegenerators/fake_audio_capture_module.cc
-	src/fakegenerators/fake_frame_source.cc
-	src/fakegenerators/frame_generator_capturer.cc
-	src/fakegenerators/frame_generator.cc
-	src/fakegenerators/test_video_capturer.cc
-	src/fakegenerators/frame_utils.cc
-	src/fakegenerators/task_queue_for_test.cc
-	src/fakegenerators/file_utils.cc
-	src/fakegenerators/file_utils_override.cc
-	src/fakegenerators/create_frame_generator.cc
-	src/fakegenerators/ivf_video_frame_generator.cc
-	src/fakegenerators/mac_file_utils.mm
 )
 
 # Private (implementation) header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Source Dependencies.
-add_subdirectory(deps/libmediasoupclient "${CMAKE_CURRENT_BINARY_DIR}/libmediasoupclient")
 add_subdirectory(deps/cpr "${CMAKE_CURRENT_BINARY_DIR}/cpr")
+add_subdirectory(deps/libmediasoupclient "${CMAKE_CURRENT_BINARY_DIR}/libmediasoupclient")
+add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
 
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
-	"${PROJECT_SOURCE_DIR}/deps/libmediasoupclient/include"
 	${CPR_INCLUDE_DIRS}
+	"${PROJECT_SOURCE_DIR}/deps/libmediasoupclient/include"
+	"${PROJECT_SOURCE_DIR}/deps/libwebrtc"
 )
 
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
-	mediasoupclient
 	${CPR_LIBRARIES}
+	mediasoupclient
+	webrtc
 )
 

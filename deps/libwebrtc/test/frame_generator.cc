@@ -7,7 +7,7 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "fakegenerators/frame_generator.h"
+#include "test/frame_generator.h"
 
 #include <string.h>
 

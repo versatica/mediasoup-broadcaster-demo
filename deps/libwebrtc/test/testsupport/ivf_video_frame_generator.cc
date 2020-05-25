@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/ivf_video_frame_generator.h"
+#include "test/testsupport/ivf_video_frame_generator.h"
 
 #include <limits>
 

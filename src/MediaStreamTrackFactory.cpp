@@ -9,9 +9,9 @@
 #include "api/create_peerconnection_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "fakegenerators/fake_audio_capture_module.h"
-#include "fakegenerators/fake_periodic_video_track_source.h"
-#include "fakegenerators/frame_generator_capturer_video_track_source.h"
+#include "pc/test/fake_audio_capture_module.h"
+#include "pc/test/fake_periodic_video_track_source.h"
+#include "pc/test/frame_generator_capturer_video_track_source.h"
 #include "system_wrappers/include/clock.h"
 
 

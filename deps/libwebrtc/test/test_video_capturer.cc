@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/test_video_capturer.h"
+#include "test/test_video_capturer.h"
 
 #include <algorithm>
 

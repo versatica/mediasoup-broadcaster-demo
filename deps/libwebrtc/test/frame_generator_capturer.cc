@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/frame_generator_capturer.h"
+#include "test/frame_generator_capturer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -24,7 +24,7 @@
 #include "rtc_base/task_queue.h"
 #include "rtc_base/time_utils.h"
 #include "system_wrappers/include/clock.h"
-#include "fakegenerators/file_utils.h"
+#include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 namespace test {

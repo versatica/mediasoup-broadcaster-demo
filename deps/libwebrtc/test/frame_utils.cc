@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/frame_utils.h"
+#include "test/frame_utils.h"
 
 #include <stdio.h>
 #include <string.h>

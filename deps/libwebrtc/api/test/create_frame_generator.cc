@@ -8,14 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fakegenerators/create_frame_generator.h"
+#include "api/test/create_frame_generator.h"
 
 #include <cstdio>
 #include <utility>
 
 #include "rtc_base/checks.h"
 #include "test/frame_generator.h"
-#include "fakegenerators/ivf_video_frame_generator.h"
+#include "test/testsupport/ivf_video_frame_generator.h"
 
 namespace webrtc {
 namespace test {

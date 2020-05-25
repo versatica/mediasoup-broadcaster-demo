@@ -56,7 +56,7 @@
 
 #include "rtc_base/checks.h"
 #include "rtc_base/string_utils.h"
-#include "fakegenerators/file_utils_override.h"
+#include "test/testsupport/file_utils_override.h"
 
 namespace webrtc {
 namespace test {
