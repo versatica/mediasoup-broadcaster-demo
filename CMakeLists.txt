@@ -65,6 +65,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	${CPR_LIBRARIES}
 	mediasoupclient
-	webrtc
+	webrtc_broadcaster
 )
 

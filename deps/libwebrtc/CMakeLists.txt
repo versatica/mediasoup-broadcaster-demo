@@ -15,19 +15,19 @@ set(SOURCE_FILES
 )
 
 # Create target.
-add_library(webrtc STATIC ${SOURCE_FILES})
+add_library(webrtc_broadcaster STATIC ${SOURCE_FILES})
 
 # Private (implementation) header files.
-target_include_directories(webrtc PRIVATE ${PROJECT_SOURCE_DIR}/deps/libwebrtc)
+target_include_directories(webrtc_broadcaster PRIVATE ${PROJECT_SOURCE_DIR}/deps/libwebrtc)
 
 # Public (interface) headers from dependencies.
-target_include_directories(webrtc PUBLIC
+target_include_directories(webrtc_broadcaster PUBLIC
 	"${LIBWEBRTC_INCLUDE_PATH}"
 	"${LIBWEBRTC_INCLUDE_PATH}/third_party/abseil-cpp"
 )
 
 # Compile definitions for libwebrtc.
-target_compile_definitions(webrtc PUBLIC
+target_compile_definitions(webrtc_broadcaster PUBLIC
 	$<$<NOT:$<PLATFORM_ID:Windows>>:WEBRTC_POSIX>
 	$<$<PLATFORM_ID:Windows>:WEBRTC_WIN>
 	$<$<PLATFORM_ID:Darwin>:WEBRTC_MAC>
