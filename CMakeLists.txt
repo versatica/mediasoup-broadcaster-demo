@@ -40,6 +40,22 @@ if(APPLE)
 	)
 endif(APPLE)
 
+include(FetchContent)
+FetchContent_Declare(
+  mediasoupclient
+  GIT_REPOSITORY https://github.com/copiltembel/libmediasoupclient.git
+  GIT_TAG        v3-DataChannelsImpl
+)
+FetchContent_MakeAvailable(mediasoupclient)
+
+FetchContent_Declare(
+	cpr
+	GIT_REPOSITORY https://github.com/whoshuu/cpr
+	GIT_TAG		   master
+)
+FetchContent_MakeAvailable(cpr)
+
+
 target_sources(${PROJECT_NAME} PRIVATE
 	src/Broadcaster.cpp
 	src/main.cpp
@@ -50,21 +66,20 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Source Dependencies.
-add_subdirectory(deps/cpr "${CMAKE_CURRENT_BINARY_DIR}/cpr")
-add_subdirectory(deps/libmediasoupclient "${CMAKE_CURRENT_BINARY_DIR}/libmediasoupclient")
 add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
 
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
-	${CPR_INCLUDE_DIRS}
-	"${PROJECT_SOURCE_DIR}/deps/libmediasoupclient/include"
+	${cpr_SOURCE_DIR}/include
+	${mediasoupclient_SOURCE_DIR}/include
 	"${PROJECT_SOURCE_DIR}/deps/libwebrtc"
 )
 
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
-	${CPR_LIBRARIES}
+	cpr
 	mediasoupclient
 	webrtc_broadcaster
+	${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
