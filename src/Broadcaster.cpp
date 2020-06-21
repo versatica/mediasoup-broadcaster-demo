@@ -13,6 +13,11 @@
 
 using json = nlohmann::json;
 
+Broadcaster::~Broadcaster() 
+{
+	this->Stop();
+}
+
 void Broadcaster::OnTransportClose(mediasoupclient::Producer* /*producer*/)
 {
 	std::cout << "[INFO] Broadcaster::OnTransportClose()" << std::endl;
@@ -39,6 +44,8 @@ std::future<void> Broadcaster::OnConnect(
 	} else if (transport->GetId() == this->recvTransportId) {
 		return this->OnConnectRecvTransport(dtlsParameters);
 	}
+
+	throw "Unknown transport requested to connect.";
 }
 
 std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters) {
@@ -277,7 +284,7 @@ void Broadcaster::Start(
 		return;
 	}
 
-	mediasoupclient::SendTransport* sendTransport = this->CreateSendTransport(enableAudio, useSimulcast);
+	sendTransport = this->CreateSendTransport(enableAudio, useSimulcast);
 
 	recvTransport = this->CreateRecvTransport();
   	this->SendDataPeriodically(sendTransport, "chat", 10);
@@ -525,9 +532,9 @@ mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
 void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds) 
 {
 	auto dataProducer = sendTransport->ProduceData(this);
-	auto* tk = &this->timer_killer;
+	// auto* tk = &this->timer_killer;
 
-    std::thread([dataProducer, dataChannelLabel, intervalSeconds, tk]() {
+    std::thread([&]() {
 		bool run = true;
         while (run)
         {
@@ -536,7 +543,7 @@ void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTrans
 			std::string s = "My date-time: ";
 			auto dataBuffer = webrtc::DataBuffer(s + std::ctime(&t));
 			dataProducer->Send(dataBuffer);
-			run = tk->wait_for(std::chrono::seconds(intervalSeconds));
+			run = this->timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
         }
     }).detach();
 }
@@ -556,12 +563,24 @@ void Broadcaster::Stop()
 
 	this->timer_killer.kill();
 
-	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
+	if (this->recvTransport) {
+		recvTransport->Close();
+	}
 
-	this->sendTransport->Close();
+	if (this->sendTransport) {
+		sendTransport->Close();
+	}
+
+	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
 }
 
-void Broadcaster::OnOpen(mediasoupclient::DataProducer* dataProducer) {}
-void Broadcaster::OnClose(mediasoupclient::DataProducer* dataProducer){}
-void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size){}
+void Broadcaster::OnOpen(mediasoupclient::DataProducer* dataProducer) {
+	std::cout << "[INFO] Broadcaster::OnOpen()" << std::endl;
+}
+void Broadcaster::OnClose(mediasoupclient::DataProducer* dataProducer){
+	std::cout << "[INFO] Broadcaster::OnClose()" << std::endl;
+}
+void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size){
+	std::cout << "[INFO] Broadcaster::OnBufferedAmountChange()" << std::endl;
+}
 
