@@ -8,8 +8,6 @@
 
 using json = nlohmann::json;
 
-static Broadcaster broadcaster;
-
 void signalHandler(int signum)
 {
 	std::cout << "[INFO] interrupt signal (" << signum << ") received" << std::endl;
