@@ -291,7 +291,6 @@ void Broadcaster::Start(
 	if (recvTransport) {
 		this->CreateDataConsumer(this->dataProducerId);
 	}
-	// this->RegisterDataListener("chat");
 }
 
 void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
