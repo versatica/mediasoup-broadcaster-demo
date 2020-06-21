@@ -33,6 +33,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	const char* envEnableAudio  = std::getenv("ENABLE_AUDIO");
 	const char* envUseSimulcast = std::getenv("USE_SIMULCAST");
 	const char* envWebrtcDebug  = std::getenv("WEBRTC_DEBUG");
+	const char* envVerifySsl 		= std::getenv("VERIFY_SSL");
 
 	if (envServerUrl == nullptr)
 	{
@@ -61,6 +62,11 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	if (envUseSimulcast && std::string(envUseSimulcast) == "false")
 		useSimulcast = false;
 
+	bool verifySsl = true;
+	if (envVerifySsl && std::string(envVerifySsl) == "false")
+		verifySsl = false;
+
+
 	// Set RTC logging severity.
 	if (envWebrtcDebug && std::string(envWebrtcDebug) == "info")
 		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_INFO);
@@ -68,6 +74,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
 	else if (envWebrtcDebug && std::string(envWebrtcDebug) == "error")
 		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_ERROR);
+	
 
 	auto logLevel = mediasoupclient::Logger::LogLevel::LOG_DEBUG;
 	mediasoupclient::Logger::SetLogLevel(logLevel);
@@ -79,7 +86,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	std::cout << "[INFO] welcome to mediasoup broadcaster app!\n" << std::endl;
 
 	std::cout << "[INFO] verifying that room '" << envRoomId << "' exists..." << std::endl;
-	auto r = cpr::GetAsync(cpr::Url{ baseUrl }).get();
+	auto r = cpr::GetAsync(cpr::Url{ baseUrl }, cpr::VerifySsl{verifySsl}).get();
 
 	if (r.status_code != 200)
 	{
@@ -93,7 +100,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 
 	auto response = nlohmann::json::parse(r.text);
 
-	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response);
+	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response, verifySsl);
 
 	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
 
