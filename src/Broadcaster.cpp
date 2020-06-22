@@ -530,10 +530,9 @@ mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
 
 void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds) 
 {
-	auto dataProducer = sendTransport->ProduceData(this);
-	// auto* tk = &this->timer_killer;
+	dataProducer = sendTransport->ProduceData(this);
 
-    std::thread([&]() {
+    std::thread([this, intervalSeconds]() {
 		bool run = true;
         while (run)
         {
@@ -542,7 +541,7 @@ void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTrans
 			std::string s = "My date-time: ";
 			auto dataBuffer = webrtc::DataBuffer(s + std::ctime(&t));
 			dataProducer->Send(dataBuffer);
-			run = this->timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
+			run = timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
         }
     }).detach();
 }
