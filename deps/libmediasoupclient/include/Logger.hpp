@@ -44,7 +44,10 @@
 #define MSC_LOGGER_HPP
 
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
+<<<<<<< HEAD
 #include <cstdint> // uint8_t
+=======
+>>>>>>> Readded deps
 #include <cstdlib> // std::abort()
 #include <cstring>
 
