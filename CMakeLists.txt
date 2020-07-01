@@ -45,8 +45,8 @@ include(FetchContent)
 message(STATUS "Fetching mediasoupclient")
 FetchContent_Declare(
   mediasoupclient
-  GIT_REPOSITORY https://github.com/copiltembel/libmediasoupclient.git
-  GIT_TAG        v3-DataChannelsImpl
+  GIT_REPOSITORY https://github.com/versatica/libmediasoupclient.git
+  GIT_TAG        v3
 )
 FetchContent_MakeAvailable(mediasoupclient)
 
