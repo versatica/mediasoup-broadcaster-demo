@@ -12,17 +12,17 @@ class Broadcaster : public mediasoupclient::SendTransport::Listener,
 	/* Virtual methods inherited from SendTransport::Listener. */
 public:
 	std::future<void> OnConnect(
-	  mediasoupclient::Transport* transport, const nlohmann::json& transportLocalParameters);
-	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& connectionState);
+	  mediasoupclient::Transport* transport, const nlohmann::json& dtlsParameters) override;
+	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& connectionState) override;
 	std::future<std::string> OnProduce(
 	  mediasoupclient::SendTransport* /*transport*/,
 	  const std::string& kind,
 	  nlohmann::json rtpParameters,
-	  const nlohmann::json& appData);
+	  const nlohmann::json& appData) override;
 
 	/* Virtual methods inherited from Producer::Listener. */
 public:
-	void OnTransportClose(mediasoupclient::Producer* producer);
+	void OnTransportClose(mediasoupclient::Producer* producer) override;
 
 public:
 	void Start(

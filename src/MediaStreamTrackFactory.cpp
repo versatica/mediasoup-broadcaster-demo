@@ -82,31 +82,31 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::stri
 }
 
 // Video track creation.
-rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string&  /*label*/)
 {
 	if (!factory)
 		createFactory();
 
-	auto video_track_source = new rtc::RefCountedObject<webrtc::FakePeriodicVideoTrackSource>(
+	auto* videoTrackSource = new rtc::RefCountedObject<webrtc::FakePeriodicVideoTrackSource>(
 			false /* remote */);
 
 	return factory->CreateVideoTrack(
-			rtc::CreateRandomUuid(), video_track_source);
+			rtc::CreateRandomUuid(), videoTrackSource);
 }
 
-rtc::scoped_refptr<webrtc::VideoTrackInterface> createSquaresVideoTrack(const std::string& label)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> createSquaresVideoTrack(const std::string&  /*label*/)
 {
 	if (!factory)
 		createFactory();
 
 	std::cout << "[INFO] getting frame generator" << std::endl;
-	auto video_track_source_ = new rtc::RefCountedObject<webrtc::FrameGeneratorCapturerVideoTrackSource>(
+	auto* videoTrackSource = new rtc::RefCountedObject<webrtc::FrameGeneratorCapturerVideoTrackSource>(
 		webrtc::FrameGeneratorCapturerVideoTrackSource::Config(), 
 		webrtc::Clock::GetRealTimeClock(),
 		false);
-	video_track_source_->Start();
+	videoTrackSource->Start();
 
 	std::cout << "[INFO] creating video track" << std::endl;
 	return factory->CreateVideoTrack(
-			rtc::CreateRandomUuid(), video_track_source_);
+			rtc::CreateRandomUuid(), videoTrackSource);
 }

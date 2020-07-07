@@ -60,7 +60,7 @@ std::future<void> Broadcaster::OnConnect(
  * Transport::Listener::OnConnectionStateChange.
  */
 void Broadcaster::OnConnectionStateChange(
-  mediasoupclient::Transport* transport, const std::string& connectionState)
+  mediasoupclient::Transport*  /*transport*/, const std::string& connectionState)
 {
 	std::cout << "[INFO] Broadcaster::OnConnectionStateChange() [connectionState:" << connectionState
 	          << "]" << std::endl;
