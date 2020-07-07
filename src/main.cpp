@@ -22,7 +22,7 @@ void signalHandler(int signum)
 	std::exit(signum);
 }
 
-int main(int argc, char* argv[])
+int main(int  /*argc*/, char*  /*argv*/[])
 {
 	// Register signal SIGINT and signal handler.
 	signal(SIGINT, signalHandler);
