@@ -219,7 +219,7 @@ void Broadcaster::Start(
 
 	this->transportId = response["id"].get<std::string>();
 
-	auto sendTransport = this->device.CreateSendTransport(
+	this->sendTransport = this->device.CreateSendTransport(
 	  this,
 	  this->transportId,
 	  response["iceParameters"],
@@ -239,7 +239,7 @@ void Broadcaster::Start(
 		};
 		/* clang-format on */
 
-		sendTransport->Produce(this, audioTrack, nullptr, &codecOptions);
+		this->sendTransport->Produce(this, audioTrack, nullptr, &codecOptions);
 	}
 	else
 	{
@@ -259,11 +259,11 @@ void Broadcaster::Start(
 			encodings.emplace_back(webrtc::RtpEncodingParameters());
 			encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-			sendTransport->Produce(this, videoTrack, &encodings, nullptr);
+			this->sendTransport->Produce(this, videoTrack, &encodings, nullptr);
 		}
 		else
 		{
-			sendTransport->Produce(this, videoTrack, nullptr, nullptr);
+			this->sendTransport->Produce(this, videoTrack, nullptr, nullptr);
 		}
 	}
 	else
@@ -277,4 +277,6 @@ void Broadcaster::Stop()
 	std::cout << "[INFO] Broadcaster::Stop()" << std::endl;
 
 	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
+
+	this->sendTransport->Close();
 }

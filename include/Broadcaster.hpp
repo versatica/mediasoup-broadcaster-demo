@@ -34,6 +34,7 @@ public:
 
 private:
 	mediasoupclient::Device device;
+	mediasoupclient::SendTransport* sendTransport{ nullptr };
 
 	std::string id = std::to_string(rtc::CreateRandomId());
 	std::string transportId;

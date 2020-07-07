@@ -97,7 +97,9 @@ int main(int argc, char* argv[])
 
 	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
 
-	(void)sigsuspend(nullptr);
+	while (true) {
+		std::cin.get();
+	}
 
 	return 0;
 }
