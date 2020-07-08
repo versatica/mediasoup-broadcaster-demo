@@ -46,8 +46,14 @@ std::future<void> Broadcaster::OnConnect(mediasoupclient::Transport* transport, 
 	{
 		return this->OnConnectRecvTransport(dtlsParameters);
 	}
+	else
+	{
+		std::promise<void> promise;
 
-	throw "Unknown transport requested to connect.";
+		promise.set_exception(std::make_exception_ptr("Unknown transport requested to connect"));
+
+		return promise.get_future();
+	}
 }
 
 std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters)
@@ -195,11 +201,11 @@ std::future<std::string> Broadcaster::OnProduce(
  * Retrieve the remote producer ID and feed the caller with it.
  */
 std::future<std::string> Broadcaster::OnProduceData(
-  mediasoupclient::SendTransport* transport,
+  mediasoupclient::SendTransport*  /*transport*/,
   const json& sctpStreamParameters,
   const std::string& label,
   const std::string& protocol,
-  const json& appData)
+  const json&  /*appData*/)
 {
 	std::cout << "[INFO] Broadcaster::OnProduceData()" << std::endl;
 	// std::cout << "[INFO] rtpParameters: " << rtpParameters.dump(4) << std::endl;
@@ -542,7 +548,7 @@ void Broadcaster::CreateRecvTransport()
 }
 
 void Broadcaster::SendDataPeriodically(
-  mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds)
+  mediasoupclient::SendTransport* sendTransport, std::string  /*dataChannelLabel*/, uint32_t intervalSeconds)
 {
 	dataProducer = sendTransport->ProduceData(this);
 
@@ -591,15 +597,15 @@ void Broadcaster::Stop()
 	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
 }
 
-void Broadcaster::OnOpen(mediasoupclient::DataProducer* dataProducer)
+void Broadcaster::OnOpen(mediasoupclient::DataProducer*  /*dataProducer*/)
 {
 	std::cout << "[INFO] Broadcaster::OnOpen()" << std::endl;
 }
-void Broadcaster::OnClose(mediasoupclient::DataProducer* dataProducer)
+void Broadcaster::OnClose(mediasoupclient::DataProducer*  /*dataProducer*/)
 {
 	std::cout << "[INFO] Broadcaster::OnClose()" << std::endl;
 }
-void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size)
+void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer*  /*dataProducer*/, uint64_t  /*size*/)
 {
 	std::cout << "[INFO] Broadcaster::OnBufferedAmountChange()" << std::endl;
 }
