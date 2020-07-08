@@ -538,8 +538,9 @@ void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTrans
         {
             std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
 			std::time_t t = std::chrono::system_clock::to_time_t(p);
-			std::string s = "My date-time: ";
-			auto dataBuffer = webrtc::DataBuffer(s + std::ctime(&t));
+			std::string s = std::ctime(&t);
+			auto dataBuffer = webrtc::DataBuffer(s);
+			std::cout << "[INFO] sending chat data: " << s <<  std::endl;
 			dataProducer->Send(dataBuffer);
 			run = timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
         }
