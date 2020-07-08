@@ -56,7 +56,7 @@ public:
 		const nlohmann::json& sctpStreamParameters,
 		const std::string& label,
 		const std::string& protocol,
-		const nlohmann::json& appData);
+		const nlohmann::json& appData) override;
 
 	/* Virtual methods inherited from Producer::Listener. */
 public:
@@ -64,19 +64,19 @@ public:
 
 	/* Virtual methods inherited from DataConsumer::Listener */
 public:
-	void OnMessage(mediasoupclient::DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer);
-	void OnConnecting(mediasoupclient::DataConsumer* dataConsumer) {}
-	void OnClosing(mediasoupclient::DataConsumer* dataConsumer) {}
-	void OnClose(mediasoupclient::DataConsumer* dataConsumer) {}
-	void OnOpen(mediasoupclient::DataConsumer* dataConsumer) {}
-	void OnTransportClose(mediasoupclient::DataConsumer* dataConsumer) {}
+	void OnMessage(mediasoupclient::DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer) override;
+	void OnConnecting(mediasoupclient::DataConsumer* dataConsumer) override {}
+	void OnClosing(mediasoupclient::DataConsumer* dataConsumer) override {}
+	void OnClose(mediasoupclient::DataConsumer* dataConsumer) override {}
+	void OnOpen(mediasoupclient::DataConsumer* dataConsumer) override {}
+	void OnTransportClose(mediasoupclient::DataConsumer* dataConsumer) override {}
 
 	/* Virtual methods inherited from DataProducer::Listener */
 public:
-	void OnOpen(mediasoupclient::DataProducer* dataProducer);
-	void OnClose(mediasoupclient::DataProducer* dataProducer);
-	void OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size);
-	void OnTransportClose(mediasoupclient::DataProducer* dataProducer);
+	void OnOpen(mediasoupclient::DataProducer* dataProducer) override;
+	void OnClose(mediasoupclient::DataProducer* dataProducer) override;
+	void OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size) override;
+	void OnTransportClose(mediasoupclient::DataProducer* dataProducer) override;
 
 public:
 	void Start(
@@ -108,8 +108,8 @@ private:
 	std::future<void> OnConnectSendTransport(const nlohmann::json& dtlsParameters);
 	std::future<void> OnConnectRecvTransport(const nlohmann::json& dtlsParameters);
 
-	mediasoupclient::SendTransport* CreateSendTransport(bool enableAudio, bool useSimulcast);
-	mediasoupclient::RecvTransport* CreateRecvTransport();
+	void CreateSendTransport(bool enableAudio, bool useSimulcast);
+	void CreateRecvTransport();
 
 	void SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, 
 		std::string dataChannelLabel, uint32_t intervalSeconds);

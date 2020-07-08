@@ -284,9 +284,9 @@ void Broadcaster::Start(
 		return;
 	}
 
-	sendTransport = this->CreateSendTransport(enableAudio, useSimulcast);
+	this->CreateSendTransport(enableAudio, useSimulcast);
 
-	recvTransport = this->CreateRecvTransport();
+	this->CreateRecvTransport();
   	this->SendDataPeriodically(sendTransport, "chat", 10);
 	if (recvTransport) {
 		this->CreateDataConsumer(this->dataProducerId);
@@ -294,7 +294,7 @@ void Broadcaster::Start(
 }
 
 void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
-	
+
 	/* clang-format off */
 	json body =
 	{
@@ -326,7 +326,7 @@ void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
 	recvTransport->ConsumeData(this, dataConsumerId, dataProducerId, "chat", "", nlohmann::json());
 }
 
-mediasoupclient::SendTransport* Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
+void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
 	std::cout << "[INFO] creating mediasoup send WebRtcTransport..." << std::endl;
 
 	json sctpCapabilities = this->device.GetSctpCapabilities();
@@ -351,7 +351,7 @@ mediasoupclient::SendTransport* Broadcaster::CreateSendTransport(bool enableAudi
 		std::cerr << "[ERROR] unable to create send mediasoup WebRtcTransport"
 		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
-		return nullptr;
+		return;
 	}
 
 	auto response = json::parse(r.text);
@@ -360,38 +360,38 @@ mediasoupclient::SendTransport* Broadcaster::CreateSendTransport(bool enableAudi
 	{
 		std::cerr << "[ERROR] 'id' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("iceParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'iceParametersd' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("iceCandidates") == response.end())
 	{
 		std::cerr << "[ERROR] 'iceCandidates' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("dtlsParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'dtlsParameters' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("sctpParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'sctpParameters' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 
 	std::cout << "[INFO] creating SendTransport..." << std::endl;
 
 	this->sendTransportId = response["id"].get<std::string>();
 
-	auto sendTransport = this->device.CreateSendTransport(
+	this->sendTransport = this->device.CreateSendTransport(
 		this,
 	  	this->sendTransportId,
 	  	response["iceParameters"],
@@ -442,13 +442,12 @@ mediasoupclient::SendTransport* Broadcaster::CreateSendTransport(bool enableAudi
 	else
 	{
 		std::cerr << "[WARN] cannot produce video" << std::endl;
-		return nullptr;
-	}
 
-	return sendTransport;
+		return;
+	}
 }
 
-mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
+void Broadcaster::CreateRecvTransport() {
 	std::cout << "[INFO] creating mediasoup recv WebRtcTransport..." << std::endl;
 
 	json sctpCapabilities = this->device.GetSctpCapabilities();
@@ -474,7 +473,7 @@ mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
 		std::cerr << "[ERROR] unable to create mediasoup recv WebRtcTransport"
 		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
-		return nullptr;
+		return;
 	}
 
 	auto response = json::parse(r.text);
@@ -483,31 +482,31 @@ mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
 	{
 		std::cerr << "[ERROR] 'id' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("iceParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'iceParameters' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("iceCandidates") == response.end())
 	{
 		std::cerr << "[ERROR] 'iceCandidates' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("dtlsParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'dtlsParameters' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 	else if (response.find("sctpParameters") == response.end())
 	{
 		std::cerr << "[ERROR] 'sctpParameters' missing in response" << std::endl;
 
-		return nullptr;
+		return;
 	}
 
 	this->recvTransportId = response["id"].get<std::string>();
@@ -517,18 +516,16 @@ mediasoupclient::RecvTransport* Broadcaster::CreateRecvTransport() {
 
 	auto sctpParameters = response["sctpParameters"];
 
-	auto recvTransport = this->device.CreateRecvTransport(
+	this->recvTransport = this->device.CreateRecvTransport(
 		this,
 	  	this->recvTransportId,
 	  	response["iceParameters"],
 	  	response["iceCandidates"],
 	  	response["dtlsParameters"],
 	  	sctpParameters);
-	
-	return recvTransport;
 }
 
-void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds) 
+void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds)
 {
 	dataProducer = sendTransport->ProduceData(this);
 
