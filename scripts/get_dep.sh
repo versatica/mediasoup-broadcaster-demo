@@ -45,8 +45,8 @@ function get_dep()
 
 function get_libmediasoupclient()
 {
-	GIT_REPO="https://github.com/jmillan/libmediasoupclient.git"
-	GIT_TAG="v3"
+	GIT_REPO="https://github.com/copiltembel/libmediasoupclient.git"
+	GIT_TAG="v3-DataChannelsImpl"
 	DEST="deps/libmediasoupclient"
 
 	get_dep "${GIT_REPO}" "${GIT_TAG}" "${DEST}"
