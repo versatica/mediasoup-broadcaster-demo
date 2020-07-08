@@ -1,19 +1,19 @@
 #include "Broadcaster.hpp"
-#include "mediasoupclient.hpp"
 #include "MediaStreamTrackFactory.hpp"
+#include "mediasoupclient.hpp"
 #include "json.hpp"
+#include <chrono>
 #include <cpr/cpr.h>
 #include <cstdlib>
+#include <ctime>
+#include <functional>
 #include <iostream>
 #include <string>
-#include <chrono>
-#include <ctime>
 #include <thread>
-#include <functional>
 
 using json = nlohmann::json;
 
-Broadcaster::~Broadcaster() 
+Broadcaster::~Broadcaster()
 {
 	this->Stop();
 }
@@ -33,22 +33,25 @@ void Broadcaster::OnTransportClose(mediasoupclient::DataProducer* /*dataProducer
  * Fired for the first Transport::Consume() or Transport::Produce().
  * Update the already created remote transport with the local DTLS parameters.
  */
-std::future<void> Broadcaster::OnConnect(
-  mediasoupclient::Transport* transport, const json& dtlsParameters)
+std::future<void> Broadcaster::OnConnect(mediasoupclient::Transport* transport, const json& dtlsParameters)
 {
 	std::cout << "[INFO] Broadcaster::OnConnect()" << std::endl;
 	// std::cout << "[INFO] dtlsParameters: " << dtlsParameters.dump(4) << std::endl;
 
-	if (transport->GetId() == this->sendTransport->GetId()){
+	if (transport->GetId() == this->sendTransport->GetId())
+	{
 		return this->OnConnectSendTransport(dtlsParameters);
-	} else if (transport->GetId() == this->recvTransport->GetId()) {
+	}
+	else if (transport->GetId() == this->recvTransport->GetId())
+	{
 		return this->OnConnectRecvTransport(dtlsParameters);
 	}
 
 	throw "Unknown transport requested to connect.";
 }
 
-std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters) {
+std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters)
+{
 	std::promise<void> promise;
 
 	/* clang-format off */
@@ -63,7 +66,7 @@ std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters
 	                     this->sendTransport->GetId() + "/connect" },
 	           cpr::Body{ body.dump() },
 	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{verifySsl})
+	           cpr::VerifySsl{ verifySsl })
 	           .get();
 
 	if (r.status_code == 200)
@@ -81,7 +84,8 @@ std::future<void> Broadcaster::OnConnectSendTransport(const json& dtlsParameters
 	return promise.get_future();
 }
 
-std::future<void> Broadcaster::OnConnectRecvTransport(const json& dtlsParameters) {
+std::future<void> Broadcaster::OnConnectRecvTransport(const json& dtlsParameters)
+{
 	std::promise<void> promise;
 
 	/* clang-format off */
@@ -96,7 +100,7 @@ std::future<void> Broadcaster::OnConnectRecvTransport(const json& dtlsParameters
 	                     this->recvTransport->GetId() + "/connect" },
 	           cpr::Body{ body.dump() },
 	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{verifySsl})
+	           cpr::VerifySsl{ verifySsl })
 	           .get();
 
 	if (r.status_code == 200)
@@ -118,7 +122,7 @@ std::future<void> Broadcaster::OnConnectRecvTransport(const json& dtlsParameters
  * Transport::Listener::OnConnectionStateChange.
  */
 void Broadcaster::OnConnectionStateChange(
-  mediasoupclient::Transport*  /*transport*/, const std::string& connectionState)
+  mediasoupclient::Transport* /*transport*/, const std::string& connectionState)
 {
 	std::cout << "[INFO] Broadcaster::OnConnectionStateChange() [connectionState:" << connectionState
 	          << "]" << std::endl;
@@ -159,7 +163,7 @@ std::future<std::string> Broadcaster::OnProduce(
 	                     this->sendTransport->GetId() + "/producers" },
 	           cpr::Body{ body.dump() },
 	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{verifySsl})
+	           cpr::VerifySsl{ verifySsl })
 	           .get();
 
 	if (r.status_code == 200)
@@ -215,7 +219,7 @@ std::future<std::string> Broadcaster::OnProduceData(
 	                     this->sendTransport->GetId() + "/produce/data" },
 	           cpr::Body{ body.dump() },
 	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{verifySsl})
+	           cpr::VerifySsl{ verifySsl })
 	           .get();
 
 	if (r.status_code == 200)
@@ -223,9 +227,12 @@ std::future<std::string> Broadcaster::OnProduceData(
 		auto response = json::parse(r.text);
 
 		auto it = response.find("id");
-		if (it == response.end() || !it->is_string()) {
+		if (it == response.end() || !it->is_string())
+		{
 			promise.set_exception(std::make_exception_ptr("'id' missing in response"));
-		} else {
+		}
+		else
+		{
 			auto dataProducerId = (*it).get<std::string>();
 			promise.set_value(dataProducerId);
 		}
@@ -242,11 +249,15 @@ std::future<std::string> Broadcaster::OnProduceData(
 }
 
 void Broadcaster::Start(
-  const std::string& baseUrl, bool enableAudio, bool useSimulcast, const json& routerRtpCapabilities, bool verifySsl)
+  const std::string& baseUrl,
+  bool enableAudio,
+  bool useSimulcast,
+  const json& routerRtpCapabilities,
+  bool verifySsl)
 {
 	std::cout << "[INFO] Broadcaster::Start()" << std::endl;
 
-	this->baseUrl = baseUrl;
+	this->baseUrl   = baseUrl;
 	this->verifySsl = verifySsl;
 
 	// Load the device.
@@ -273,7 +284,7 @@ void Broadcaster::Start(
 	           cpr::Url{ this->baseUrl + "/broadcasters" },
 	           cpr::Body{ body.dump() },
 	           cpr::Header{ { "Content-Type", "application/json" } },
-			   cpr::VerifySsl{verifySsl})
+	           cpr::VerifySsl{ verifySsl })
 	           .get();
 
 	if (r.status_code != 200)
@@ -287,14 +298,15 @@ void Broadcaster::Start(
 	this->CreateSendTransport(enableAudio, useSimulcast);
 
 	this->CreateRecvTransport();
-  	this->SendDataPeriodically(sendTransport, "chat", 10);
-	if (recvTransport) {
+	this->SendDataPeriodically(sendTransport, "chat", 10);
+	if (recvTransport)
+	{
 		this->CreateDataConsumer(this->dataProducer->GetId());
 	}
 }
 
-void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
-
+void Broadcaster::CreateDataConsumer(const std::string& dataProducerId)
+{
 	/* clang-format off */
 	json body =
 	{
@@ -303,15 +315,16 @@ void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
 	/* clang-format on */
 	// create server data consumer
 	auto r = cpr::PostAsync(
-		cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" + this->recvTransport->GetId() + "/consume/data" },
-		cpr::Body{ body.dump() },
-		cpr::Header{ { "Content-Type", "application/json" } },
-		cpr::VerifySsl{verifySsl})
-		.get();
+	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports/" +
+	                     this->recvTransport->GetId() + "/consume/data" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } },
+	           cpr::VerifySsl{ verifySsl })
+	           .get();
 	if (r.status_code != 200)
 	{
 		std::cerr << "[ERROR] server unable to consume mediasoup recv WebRtcTransport"
-				<< " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
+		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 		return;
 	}
 
@@ -326,7 +339,8 @@ void Broadcaster::CreateDataConsumer(const std::string& dataProducerId) {
 	recvTransport->ConsumeData(this, dataConsumerId, dataProducerId, "chat", "", nlohmann::json());
 }
 
-void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
+void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
+{
 	std::cout << "[INFO] creating mediasoup send WebRtcTransport..." << std::endl;
 
 	json sctpCapabilities = this->device.GetSctpCapabilities();
@@ -340,11 +354,11 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
 	/* clang-format on */
 
 	auto r = cpr::PostAsync(
-	      cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
-	      cpr::Body{ body.dump() },
-	      cpr::Header{ { "Content-Type", "application/json" } },
-		  cpr::VerifySsl{verifySsl})
-	      .get();
+	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } },
+	           cpr::VerifySsl{ verifySsl })
+	           .get();
 
 	if (r.status_code != 200)
 	{
@@ -392,12 +406,12 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
 	auto sendTransportId = response["id"].get<std::string>();
 
 	this->sendTransport = this->device.CreateSendTransport(
-		this,
-		sendTransportId,
-		response["iceParameters"],
-		response["iceCandidates"],
-		response["dtlsParameters"],
-		response["sctpParameters"]);
+	  this,
+	  sendTransportId,
+	  response["iceParameters"],
+	  response["iceCandidates"],
+	  response["dtlsParameters"],
+	  response["sctpParameters"]);
 
 	///////////////////////// Create Audio Producer //////////////////////////
 
@@ -447,7 +461,8 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast) {
 	}
 }
 
-void Broadcaster::CreateRecvTransport() {
+void Broadcaster::CreateRecvTransport()
+{
 	std::cout << "[INFO] creating mediasoup recv WebRtcTransport..." << std::endl;
 
 	json sctpCapabilities = this->device.GetSctpCapabilities();
@@ -462,11 +477,11 @@ void Broadcaster::CreateRecvTransport() {
 
 	// create server transport
 	auto r = cpr::PostAsync(
-	      cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
-	      cpr::Body{ body.dump() },
-	      cpr::Header{ { "Content-Type", "application/json" } },
-		  cpr::VerifySsl{verifySsl})
-	      .get();
+	           cpr::Url{ this->baseUrl + "/broadcasters/" + this->id + "/transports" },
+	           cpr::Body{ body.dump() },
+	           cpr::Header{ { "Content-Type", "application/json" } },
+	           cpr::VerifySsl{ verifySsl })
+	           .get();
 
 	if (r.status_code != 200)
 	{
@@ -516,39 +531,42 @@ void Broadcaster::CreateRecvTransport() {
 	auto sctpParameters = response["sctpParameters"];
 
 	this->recvTransport = this->device.CreateRecvTransport(
-		this,
-		recvTransportId,
-		response["iceParameters"],
-		response["iceCandidates"],
-		response["dtlsParameters"],
-		sctpParameters);
+	  this,
+	  recvTransportId,
+	  response["iceParameters"],
+	  response["iceCandidates"],
+	  response["dtlsParameters"],
+	  sctpParameters);
 }
 
-void Broadcaster::SendDataPeriodically(mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds)
+void Broadcaster::SendDataPeriodically(
+  mediasoupclient::SendTransport* sendTransport, std::string dataChannelLabel, uint32_t intervalSeconds)
 {
 	dataProducer = sendTransport->ProduceData(this);
 
-    std::thread([this, intervalSeconds]() {
+	std::thread([this, intervalSeconds]() {
 		bool run = true;
-        while (run)
-        {
-            std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
-			std::time_t t = std::chrono::system_clock::to_time_t(p);
-			std::string s = std::ctime(&t);
-			auto dataBuffer = webrtc::DataBuffer(s);
-			std::cout << "[INFO] sending chat data: " << s <<  std::endl;
+		while (run)
+		{
+			std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
+			std::time_t t                           = std::chrono::system_clock::to_time_t(p);
+			std::string s                           = std::ctime(&t);
+			auto dataBuffer                         = webrtc::DataBuffer(s);
+			std::cout << "[INFO] sending chat data: " << s << std::endl;
 			dataProducer->Send(dataBuffer);
 			run = timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
-        }
-    }).detach();
+		}
+	})
+	  .detach();
 }
 
 void Broadcaster::OnMessage(mediasoupclient::DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer)
 {
 	std::cout << "[INFO] Broadcaster::OnMessage()" << std::endl;
-	if (dataConsumer->GetLabel() == "chat") {
+	if (dataConsumer->GetLabel() == "chat")
+	{
 		std::string s = std::string(buffer.data.data<char>(), buffer.data.size());
-		std::cout << "[INFO] received chat data: " + s  <<  std::endl;
+		std::cout << "[INFO] received chat data: " + s << std::endl;
 	}
 }
 
@@ -558,24 +576,28 @@ void Broadcaster::Stop()
 
 	this->timer_killer.kill();
 
-	if (this->recvTransport) {
+	if (this->recvTransport)
+	{
 		recvTransport->Close();
 	}
 
-	if (this->sendTransport) {
+	if (this->sendTransport)
+	{
 		sendTransport->Close();
 	}
 
 	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
 }
 
-void Broadcaster::OnOpen(mediasoupclient::DataProducer* dataProducer) {
+void Broadcaster::OnOpen(mediasoupclient::DataProducer* dataProducer)
+{
 	std::cout << "[INFO] Broadcaster::OnOpen()" << std::endl;
 }
-void Broadcaster::OnClose(mediasoupclient::DataProducer* dataProducer){
+void Broadcaster::OnClose(mediasoupclient::DataProducer* dataProducer)
+{
 	std::cout << "[INFO] Broadcaster::OnClose()" << std::endl;
 }
-void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size){
+void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t size)
+{
 	std::cout << "[INFO] Broadcaster::OnBufferedAmountChange()" << std::endl;
 }
-

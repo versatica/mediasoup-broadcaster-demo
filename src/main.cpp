@@ -17,7 +17,7 @@ void signalHandler(int signum)
 	std::exit(signum);
 }
 
-int main(int  /*argc*/, char*  /*argv*/[])
+int main(int /*argc*/, char* /*argv*/[])
 {
 	// Register signal SIGINT and signal handler.
 	signal(SIGINT, signalHandler);
@@ -28,7 +28,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	const char* envEnableAudio  = std::getenv("ENABLE_AUDIO");
 	const char* envUseSimulcast = std::getenv("USE_SIMULCAST");
 	const char* envWebrtcDebug  = std::getenv("WEBRTC_DEBUG");
-	const char* envVerifySsl 	= std::getenv("VERIFY_SSL");
+	const char* envVerifySsl    = std::getenv("VERIFY_SSL");
 
 	if (envServerUrl == nullptr)
 	{
@@ -61,7 +61,6 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	if (envVerifySsl && std::string(envVerifySsl) == "false")
 		verifySsl = false;
 
-
 	// Set RTC logging severity.
 	if (envWebrtcDebug && std::string(envWebrtcDebug) == "info")
 		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_INFO);
@@ -80,7 +79,7 @@ int main(int  /*argc*/, char*  /*argv*/[])
 	std::cout << "[INFO] welcome to mediasoup broadcaster app!\n" << std::endl;
 
 	std::cout << "[INFO] verifying that room '" << envRoomId << "' exists..." << std::endl;
-	auto r = cpr::GetAsync(cpr::Url{ baseUrl }, cpr::VerifySsl{verifySsl}).get();
+	auto r = cpr::GetAsync(cpr::Url{ baseUrl }, cpr::VerifySsl{ verifySsl }).get();
 
 	if (r.status_code != 200)
 	{
@@ -88,7 +87,9 @@ int main(int  /*argc*/, char*  /*argv*/[])
 		          << " [status code:" << r.status_code << ", body:\"" << r.text << "\"]" << std::endl;
 
 		return 1;
-	} else {
+	}
+	else
+	{
 		std::cout << "[INFO] found room" << envRoomId << std::endl;
 	}
 
@@ -98,9 +99,10 @@ int main(int  /*argc*/, char*  /*argv*/[])
 
 	broadcaster.Start(baseUrl, enableAudio, useSimulcast, response, verifySsl);
 
-	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..."<< std::endl;
+	std::cout << "[INFO] press Ctrl+C or Cmd+C to leave..." << std::endl;
 
-	while (true) {
+	while (true)
+	{
 		std::cin.get();
 	}
 
