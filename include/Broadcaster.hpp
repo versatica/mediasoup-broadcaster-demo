@@ -96,11 +96,8 @@ private:
 	mediasoupclient::RecvTransport* recvTransport{ nullptr };
 
 	std::string id = std::to_string(rtc::CreateRandomId());
-	std::string sendTransportId;
-	std::string recvTransportId;
 	std::string baseUrl;
 	std::thread sendDataThread;
-	std::string dataProducerId;
 
 	struct timer_killer timer_killer;
 	bool verifySsl = true;
