@@ -172,7 +172,9 @@ std::future<std::string> Broadcaster::OnProduce(
 
 		auto it = response.find("id");
 		if (it == response.end() || !it->is_string())
+		{
 			promise.set_exception(std::make_exception_ptr("'id' missing in response"));
+		}
 
 		promise.set_value((*it).get<std::string>());
 	}
@@ -554,7 +556,7 @@ void Broadcaster::SendDataPeriodically(
 			auto dataBuffer                         = webrtc::DataBuffer(s);
 			std::cout << "[INFO] sending chat data: " << s << std::endl;
 			dataProducer->Send(dataBuffer);
-			run = timer_killer.wait_for(std::chrono::seconds(intervalSeconds));
+			run = timerKiller.WaitFor(std::chrono::seconds(intervalSeconds));
 		}
 	})
 	  .detach();
@@ -574,7 +576,7 @@ void Broadcaster::Stop()
 {
 	std::cout << "[INFO] Broadcaster::Stop()" << std::endl;
 
-	this->timer_killer.kill();
+	this->timerKiller.Kill();
 
 	if (this->recvTransport)
 	{
