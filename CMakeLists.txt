@@ -10,6 +10,13 @@ set(broadcaster_VERSION_MINOR 1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+message("\n=========== mediasoup-broadcaster-demo Build Configuration ===========\n")
+message(STATUS "LIBWEBRTC_INCLUDE_PATH : " ${LIBWEBRTC_INCLUDE_PATH})
+message(STATUS "LIBWEBRTC_BINARY_PATH  : " ${LIBWEBRTC_BINARY_PATH})
+message(STATUS "OPENSSL_INCLUDE_DIR    : " ${OPENSSL_INCLUDE_DIR})
+message(STATUS "CMAKE_USE_OPENSSL      : " ${CMAKE_USE_OPENSSL})
+message("")
+
 # Add some compile flags to our source files.
 set_source_files_properties(${SOURCE_FILES}
 	PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
