@@ -62,12 +62,15 @@ int main(int /*argc*/, char* /*argv*/[])
 		verifySsl = false;
 
 	// Set RTC logging severity.
-	if (envWebrtcDebug && std::string(envWebrtcDebug) == "info")
-		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_INFO);
-	else if (envWebrtcDebug && std::string(envWebrtcDebug) == "warn")
-		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
-	else if (envWebrtcDebug && std::string(envWebrtcDebug) == "error")
-		rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_ERROR);
+	if (envWebrtcDebug)
+	{
+		if (std::string(envWebrtcDebug) == "info")
+			rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_INFO);
+		else if (std::string(envWebrtcDebug) == "warn")
+			rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
+		else if (std::string(envWebrtcDebug) == "error")
+			rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_ERROR);
+	}
 
 	auto logLevel = mediasoupclient::Logger::LogLevel::LOG_DEBUG;
 	mediasoupclient::Logger::SetLogLevel(logLevel);

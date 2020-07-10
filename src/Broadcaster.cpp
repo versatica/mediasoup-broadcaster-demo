@@ -201,11 +201,11 @@ std::future<std::string> Broadcaster::OnProduce(
  * Retrieve the remote producer ID and feed the caller with it.
  */
 std::future<std::string> Broadcaster::OnProduceData(
-  mediasoupclient::SendTransport*  /*transport*/,
+  mediasoupclient::SendTransport* /*transport*/,
   const json& sctpStreamParameters,
   const std::string& label,
   const std::string& protocol,
-  const json&  /*appData*/)
+  const json& /*appData*/)
 {
 	std::cout << "[INFO] Broadcaster::OnProduceData()" << std::endl;
 	// std::cout << "[INFO] rtpParameters: " << rtpParameters.dump(4) << std::endl;
@@ -304,17 +304,13 @@ void Broadcaster::Start(
 	}
 
 	this->CreateSendTransport(enableAudio, useSimulcast);
-
 	this->CreateRecvTransport();
-	this->SendDataPeriodically(sendTransport, "chat", 10);
-	if (recvTransport)
-	{
-		this->CreateDataConsumer(this->dataProducer->GetId());
-	}
 }
 
-void Broadcaster::CreateDataConsumer(const std::string& dataProducerId)
+void Broadcaster::CreateDataConsumer()
 {
+	const std::string& dataProducerId = this->dataProducer->GetId();
+
 	/* clang-format off */
 	json body =
 	{
@@ -343,8 +339,9 @@ void Broadcaster::CreateDataConsumer(const std::string& dataProducerId)
 		return;
 	}
 	std::string dataConsumerId = response["id"].get<std::string>();
-	// create client consumer
-	recvTransport->ConsumeData(this, dataConsumerId, dataProducerId, "chat", "", nlohmann::json());
+	// Create client consumer.
+	this->dataConsumer = this->recvTransport->ConsumeData(
+	  this, dataConsumerId, dataProducerId, "chat", "", nlohmann::json());
 }
 
 void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
@@ -467,6 +464,26 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
 
 		return;
 	}
+
+	///////////////////////// Create Data Producer //////////////////////////
+
+	this->dataProducer = sendTransport->ProduceData(this);
+
+	uint32_t intervalSeconds = 10;
+	std::thread([this, intervalSeconds]() {
+		bool run = true;
+		while (run)
+		{
+			std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
+			std::time_t t                           = std::chrono::system_clock::to_time_t(p);
+			std::string s                           = std::ctime(&t);
+			auto dataBuffer                         = webrtc::DataBuffer(s);
+			std::cout << "[INFO] sending chat data: " << s << std::endl;
+			this->dataProducer->Send(dataBuffer);
+			run = timerKiller.WaitFor(std::chrono::seconds(intervalSeconds));
+		}
+	})
+	  .detach();
 }
 
 void Broadcaster::CreateRecvTransport()
@@ -545,27 +562,8 @@ void Broadcaster::CreateRecvTransport()
 	  response["iceCandidates"],
 	  response["dtlsParameters"],
 	  sctpParameters);
-}
 
-void Broadcaster::SendDataPeriodically(
-  mediasoupclient::SendTransport* sendTransport, std::string  /*dataChannelLabel*/, uint32_t intervalSeconds)
-{
-	dataProducer = sendTransport->ProduceData(this);
-
-	std::thread([this, intervalSeconds]() {
-		bool run = true;
-		while (run)
-		{
-			std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
-			std::time_t t                           = std::chrono::system_clock::to_time_t(p);
-			std::string s                           = std::ctime(&t);
-			auto dataBuffer                         = webrtc::DataBuffer(s);
-			std::cout << "[INFO] sending chat data: " << s << std::endl;
-			dataProducer->Send(dataBuffer);
-			run = timerKiller.WaitFor(std::chrono::seconds(intervalSeconds));
-		}
-	})
-	  .detach();
+	this->CreateDataConsumer();
 }
 
 void Broadcaster::OnMessage(mediasoupclient::DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer)
@@ -594,18 +592,20 @@ void Broadcaster::Stop()
 		sendTransport->Close();
 	}
 
-	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }, cpr::VerifySsl{ verifySsl}).get();
+	cpr::DeleteAsync(
+	  cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }, cpr::VerifySsl{ verifySsl })
+	  .get();
 }
 
-void Broadcaster::OnOpen(mediasoupclient::DataProducer*  /*dataProducer*/)
+void Broadcaster::OnOpen(mediasoupclient::DataProducer* /*dataProducer*/)
 {
 	std::cout << "[INFO] Broadcaster::OnOpen()" << std::endl;
 }
-void Broadcaster::OnClose(mediasoupclient::DataProducer*  /*dataProducer*/)
+void Broadcaster::OnClose(mediasoupclient::DataProducer* /*dataProducer*/)
 {
 	std::cout << "[INFO] Broadcaster::OnClose()" << std::endl;
 }
-void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer*  /*dataProducer*/, uint64_t  /*size*/)
+void Broadcaster::OnBufferedAmountChange(mediasoupclient::DataProducer* /*dataProducer*/, uint64_t /*size*/)
 {
 	std::cout << "[INFO] Broadcaster::OnBufferedAmountChange()" << std::endl;
 }

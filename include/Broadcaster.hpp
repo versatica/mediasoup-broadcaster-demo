@@ -100,8 +100,9 @@ public:
 private:
 	mediasoupclient::Device device;
 	mediasoupclient::SendTransport* sendTransport{ nullptr };
-	mediasoupclient::DataProducer* dataProducer{ nullptr };
 	mediasoupclient::RecvTransport* recvTransport{ nullptr };
+	mediasoupclient::DataProducer* dataProducer{ nullptr };
+	mediasoupclient::DataConsumer* dataConsumer{ nullptr };
 
 	std::string id = std::to_string(rtc::CreateRandomId());
 	std::string baseUrl;
@@ -115,14 +116,7 @@ private:
 
 	void CreateSendTransport(bool enableAudio, bool useSimulcast);
 	void CreateRecvTransport();
-
-	void SendDataPeriodically(
-	  mediasoupclient::SendTransport* sendTransport,
-	  std::string dataChannelLabel,
-	  uint32_t intervalSeconds);
-	// void DoSendDataPeriodically(mediasoupclient::DataProducer* dataProducer, std::string dataChannelLabel);
-
-	void CreateDataConsumer(const std::string& dataProducerId);
+	void CreateDataConsumer();
 };
 
 #endif // STOKER_HPP
