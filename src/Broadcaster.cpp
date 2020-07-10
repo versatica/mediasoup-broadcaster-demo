@@ -594,7 +594,7 @@ void Broadcaster::Stop()
 		sendTransport->Close();
 	}
 
-	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }).get();
+	cpr::DeleteAsync(cpr::Url{ this->baseUrl + "/broadcasters/" + this->id }, cpr::VerifySsl{ verifySsl}).get();
 }
 
 void Broadcaster::OnOpen(mediasoupclient::DataProducer*  /*dataProducer*/)

@@ -24,6 +24,7 @@ Environment variables:
 * `USE_SIMULCAST`: If "false" no simulcast will be used (defaults to "true").
 * `ENABLE_AUDIO`: If "false" no audio Producer is created (defaults to "true").
 * `WEBRTC_DEBUG`: Enable libwebrtc logging. Can be "info", "warn" or "error" (optional).
+* `VERIFY_SSL`: Verifies server side SSL certificate (defaults to "true") (optional).
 
 ## Dependencies
 
