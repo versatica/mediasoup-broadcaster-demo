@@ -1,4 +1,4 @@
-﻿#include "Broadcaster.hpp"
+#include "Broadcaster.hpp"
 #include "mediasoupclient.hpp"
 #include <cpr/cpr.h>
 #include <csignal> // sigsuspend()
