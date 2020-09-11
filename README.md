@@ -35,7 +35,9 @@ Environment variables:
 
 ## Installation
 
-```bash
+#Linux
+```
+bash
 git clone https://github.com/versatica/mediasoup-broadcaster-demo.git
 
 cmake . -Bbuild                                              \
@@ -46,12 +48,23 @@ cmake . -Bbuild                                              \
 
 make -C build
 ```
+#ubuntu
+```
+bash
+brew install curl cpr
+
+git clone https://github.com/versatica/mediasoup-broadcaster-demo.git
+
+cmake . -Bbuild                                              \
+  -DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
+  -DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY}
+  
+make -C build
+```
 
 ## License
 
 Some files contain specific license agreements, written in the beginning of the respective files.
-
-*NOTE 1:* `PATH_TO_OPENSSL_HEADERS` is `/usr/local/opt/openssl/include` if you install OpenSSL using Homebrew in OSX.
 
 [mediasoup-demo]: https://github.com/versatica/mediasoup-demo
 [libmediasoupclient]: https://github.com/versatica/libmediasoupclient

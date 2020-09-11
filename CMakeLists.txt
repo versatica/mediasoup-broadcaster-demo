@@ -10,16 +10,21 @@ set(broadcaster_VERSION_MINOR 1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
 message("\n=========== mediasoup-broadcaster-demo Build Configuration ===========\n")
 message(STATUS "LIBWEBRTC_INCLUDE_PATH : " ${LIBWEBRTC_INCLUDE_PATH})
 message(STATUS "LIBWEBRTC_BINARY_PATH  : " ${LIBWEBRTC_BINARY_PATH})
-message(STATUS "OPENSSL_INCLUDE_DIR    : " ${OPENSSL_INCLUDE_DIR})
-message(STATUS "CMAKE_USE_OPENSSL      : " ${CMAKE_USE_OPENSSL})
+if(NOT APPLE)
+    message(STATUS "CMAKE_USE_OPENSSL      : " ${CMAKE_USE_OPENSSL})
+endif()
 message("")
 
 # Add some compile flags to our source files.
 set_source_files_properties(${SOURCE_FILES}
 	PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 
 # Create target.
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -34,6 +39,8 @@ if(APPLE)
 	find_library(CORE_MEDIA CoreMedia)
 	find_library(CORE_VIDEO CoreVideo)
 	find_library(CORE_SERVICES CoreServices)
+	find_library(SECURITY Security)
+	find_library(LDAP LDAP)
 
 	target_link_libraries(${PROJECT_NAME} PUBLIC
 		${APPLICATION_SERVICES}
@@ -41,10 +48,13 @@ if(APPLE)
 		${AV_FOUNDATION}
 		${CORE_AUDIO}
 		${CORE_FOUNDATION}
+		${SECURITY}
+		${LDAP}
 		${CORE_MEDIA}
 		${CORE_VIDEO}
 		${CORE_SERVICES}
 	)
+
 endif(APPLE)
 
 target_sources(${PROJECT_NAME} PRIVATE
@@ -57,7 +67,13 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Source Dependencies.
-add_subdirectory(deps/cpr "${CMAKE_CURRENT_BINARY_DIR}/cpr")
+if(APPLE)
+    find_package(CPR REQUIRED)
+    find_package(CURL REQUIRED)
+else()
+    add_subdirectory(deps/cpr "${CMAKE_CURRENT_BINARY_DIR}/cpr")
+endif()
+
 add_subdirectory(deps/libmediasoupclient "${CMAKE_CURRENT_BINARY_DIR}/libmediasoupclient")
 add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
 
@@ -70,8 +86,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
-	${CPR_LIBRARIES}
 	mediasoupclient
 	webrtc_broadcaster
+	${CPR_LIBRARIES}
+	${CURL_LIBRARIES}
 )
 

@@ -1,4 +1,4 @@
-﻿#include "Broadcaster.hpp"
+#include "Broadcaster.hpp"
 #include "mediasoupclient.hpp"
 #include <cpr/cpr.h>
 #include <csignal> // sigsuspend()
@@ -23,8 +23,8 @@ int main(int /*argc*/, char* /*argv*/[])
 	signal(SIGINT, signalHandler);
 
 	// Retrieve configuration from environment variables.
-	const char* envServerUrl    = std::getenv("SERVER_URL");
-	const char* envRoomId       = std::getenv("ROOM_ID");
+    const char* envServerUrl    = "https://v3demo.mediasoup.org:4443";//std::getenv("SERVER_URL");
+    const char* envRoomId       = "2sisk6ar";//std::getenv("ROOM_ID");
 	const char* envEnableAudio  = std::getenv("ENABLE_AUDIO");
 	const char* envUseSimulcast = std::getenv("USE_SIMULCAST");
 	const char* envWebrtcDebug  = std::getenv("WEBRTC_DEBUG");
