@@ -16,6 +16,7 @@ message("\n=========== mediasoup-broadcaster-demo Build Configuration ==========
 message(STATUS "LIBWEBRTC_INCLUDE_PATH : " ${LIBWEBRTC_INCLUDE_PATH})
 message(STATUS "LIBWEBRTC_BINARY_PATH  : " ${LIBWEBRTC_BINARY_PATH})
 if(NOT APPLE)
+    message(STATUS "OPENSSL_INCLUDE_DIR    : " ${OPENSSL_INCLUDE_DIR})
     message(STATUS "CMAKE_USE_OPENSSL      : " ${CMAKE_USE_OPENSSL})
 endif()
 message("")

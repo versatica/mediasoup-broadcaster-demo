@@ -48,7 +48,7 @@ cmake . -Bbuild                                              \
 
 make -C build
 ```
-### ubuntu
+### MacOS X
 ```
 bash
 brew install curl cpr
