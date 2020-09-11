@@ -35,7 +35,7 @@ Environment variables:
 
 ## Installation
 
-#Linux
+### Linux
 ```
 bash
 git clone https://github.com/versatica/mediasoup-broadcaster-demo.git
@@ -48,7 +48,7 @@ cmake . -Bbuild                                              \
 
 make -C build
 ```
-#ubuntu
+### ubuntu
 ```
 bash
 brew install curl cpr
