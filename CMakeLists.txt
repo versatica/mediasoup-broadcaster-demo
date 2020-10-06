@@ -70,6 +70,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
+        ${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
 	${CPR_LIBRARIES}
 	mediasoupclient
 	webrtc_broadcaster
