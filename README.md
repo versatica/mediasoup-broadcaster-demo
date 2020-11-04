@@ -47,6 +47,23 @@ cmake . -Bbuild                                              \
 make -C build
 ```
 
+#### Linkage Considerations (1)
+
+```
+[ 65%] Linking C shared library ../../../../lib/libcurl.dylib ld: cannot link directly with dylib/framework, your binary is not an allowed client of /usr/lib/libcrypto.dylib for architecture x86_64 clang: error: linker command failed with exit code 1 (use -v to see invocation)
+make[2]: *** [lib/libcurl.dylib] Error 1 make[1]: *** [cpr/opt/curl/lib/CMakeFiles/libcurl.dir/all] Error 2
+make: *** [all] Error 2
+```
+
+The following error may happen if the linker is not able to find the openssl crypto library. In order to avoid this error, specify the crypto library path along with the openssl root directory using the `OPENSSL_CRYPTO_LIBRARY` flag. Ie:
+
+```
+-DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1h \
+-DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1h/lib/libcrypto.1.1.dylib
+```
+
+
+
 ## License
 
 Some files contain specific license agreements, written in the beginning of the respective files.
