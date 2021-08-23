@@ -9,7 +9,9 @@
 #include <mutex>
 #include <string>
 
-class Broadcaster : public mediasoupclient::SendTransport::Listener,
+class Broadcaster : public
+                    mediasoupclient::SendTransport::Listener,
+                    mediasoupclient::RecvTransport::Listener,
                     mediasoupclient::Producer::Listener,
                     mediasoupclient::DataProducer::Listener,
                     mediasoupclient::DataConsumer::Listener
