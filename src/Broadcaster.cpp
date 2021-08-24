@@ -338,10 +338,18 @@ void Broadcaster::CreateDataConsumer()
 		std::cerr << "[ERROR] 'id' missing in response" << std::endl;
 		return;
 	}
-	std::string dataConsumerId = response["id"].get<std::string>();
+	auto dataConsumerId = response["id"].get<std::string>();
+
+	if (response.find("streamId") == response.end())
+	{
+		std::cerr << "[ERROR] 'streamId' missing in response" << std::endl;
+		return;
+	}
+	auto streamId = response["streamId"].get<uint16_t>();
+
 	// Create client consumer.
 	this->dataConsumer = this->recvTransport->ConsumeData(
-	  this, dataConsumerId, dataProducerId, "chat", "", nlohmann::json());
+	  this, dataConsumerId, dataProducerId, streamId, "chat", "", nlohmann::json());
 }
 
 void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
