@@ -439,7 +439,7 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
 		};
 		/* clang-format on */
 
-		this->sendTransport->Produce(this, audioTrack, nullptr, &codecOptions);
+		this->sendTransport->Produce(this, audioTrack, nullptr, &codecOptions, nullptr);
 	}
 	else
 	{
@@ -459,11 +459,11 @@ void Broadcaster::CreateSendTransport(bool enableAudio, bool useSimulcast)
 			encodings.emplace_back(webrtc::RtpEncodingParameters());
 			encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-			this->sendTransport->Produce(this, videoTrack, &encodings, nullptr);
+			this->sendTransport->Produce(this, videoTrack, &encodings, nullptr, nullptr);
 		}
 		else
 		{
-			this->sendTransport->Produce(this, videoTrack, nullptr, nullptr);
+			this->sendTransport->Produce(this, videoTrack, nullptr, nullptr, nullptr);
 		}
 	}
 	else
